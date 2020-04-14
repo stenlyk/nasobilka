@@ -5,9 +5,6 @@ export default class Quiz extends React.Component {
   constructor(props) {
     super(props);
     this.state = this.initialState;
-    for (let index = 0; index < 10; index++) {
-      this.generateQuestion();
-    }
   }
 
   get initialState() {
@@ -23,18 +20,22 @@ export default class Quiz extends React.Component {
     };
   }
 
+  componentDidMount() {
+    this.generateQuestions();
+  }
+
   reload(event) {
     this.setState(this.initialState);
-    for (let index = 0; index < 10; index++) {
-      this.generateQuestion();
-    }
+    setTimeout(() => {
+      this.generateQuestions();
+    }, 100);
     event.preventDefault();
   }
 
   handleChange(event) {
     let answers = this.state.answers;
     answers[this.state.position] = Number(event.target.value);
-    this.setState(answers);
+    this.setState({ answers });
   }
 
   handleSubmit(event) {
@@ -47,7 +48,7 @@ export default class Quiz extends React.Component {
     if (Object.keys(questions).length > position) {
       const key = Object.keys(questions)[position];
       const q = questions[key];
-      let timeout = 300;
+      let timeout = 3000;
       this.setState({
         submited: true,
       });
@@ -62,7 +63,7 @@ export default class Quiz extends React.Component {
           correctAnswer: "Správně",
           correctAnswerState: "success",
         });
-        timeout = 100;
+        timeout = 1000;
       } else {
         let corect = this.getCorrectAnswer(q);
         let lsWrong = reactLocalStorage.getObject("wrong", []);
@@ -109,6 +110,12 @@ export default class Quiz extends React.Component {
     return question.num1;
   }
 
+  generateQuestions() {
+    for (let index = 0; index < 10; index++) {
+      this.generateQuestion();
+    }
+  }
+
   generateQuestion() {
     const num = this.props.num;
     const nas = this.props.nas;
@@ -123,19 +130,20 @@ export default class Quiz extends React.Component {
     let method = "nas";
     let first = true;
 
-    if (Object.keys(usedQuestions).length <= 10) {
+    if (Object.keys(usedQuestions).length < 10) {
       num1 = Math.floor(Math.random() * 11);
       num2 = num[Math.floor(Math.random() * num.length)];
       side = sides[Math.floor(Math.random() * sides.length)];
       first = Math.floor(Math.random() * 1000) % 2 === 0 ? true : false;
       method = nas ? "nas" : "del";
 
-      if (num2 === 0) {
-        num2 = num[0];
-      }
-
       if (nas && del) {
         method = methods[Math.floor(Math.random() * methods.length)];
+      }
+
+      if (num1 === 0) {
+        side = "right";
+        first = false;
       }
 
       const key = method + "|" + side + "|" + first + "|" + num1 + "|" + num2;
@@ -175,12 +183,12 @@ export default class Quiz extends React.Component {
               : this.renderDivade(num1, num2, side, first)}
           </div>
         </div>
-        <div className="row">
+        <div className="row quiz">
           <div className="col">
             {!submited ? (
               <input
                 type="submit"
-                className="btn btn-primary"
+                className="btn btn-primary btn-lg"
                 value="Zkontrolovat"
               />
             ) : (
@@ -198,7 +206,7 @@ export default class Quiz extends React.Component {
     const key = "nas|" + side + "|" + first + "|" + num1 + "|" + num2;
     return side === "left" ? (
       <h2>
-        {first ? num1 : num2} *
+        {first ? num1 : num2} *{" "}
         <input
           key={key}
           type="number"
@@ -214,7 +222,7 @@ export default class Quiz extends React.Component {
       </h2>
     ) : (
       <h2>
-        {num1} * {num2} =
+        {num1} * {num2} ={" "}
         <input
           key={key}
           type="number"
@@ -234,7 +242,7 @@ export default class Quiz extends React.Component {
     const total = num1 * num2;
     return side === "left" ? (
       <h2>
-        {total} :
+        {total} :{" "}
         <input
           key={key}
           type="number"
@@ -250,7 +258,7 @@ export default class Quiz extends React.Component {
       </h2>
     ) : (
       <h2>
-        {total} : {first ? num1 : num2} =
+        {total} : {first ? num1 : num2} ={" "}
         <input
           key={key}
           type="number"
@@ -270,12 +278,13 @@ export default class Quiz extends React.Component {
     const key = "nas|" + side + "|" + first + "|" + num1 + "|" + num2;
     return side === "left" ? (
       <h3 key={key}>
-        {first ? num1 : num2} *<strong>{first ? num2 : num1}</strong> =
+        {first ? num1 : num2} *
+        <strong className="bg-danger">{first ? num2 : num1}</strong> =
         {num1 * num2}
       </h3>
     ) : (
       <h3 key={key}>
-        {num1} * {num2} =<strong>{total}</strong>
+        {num1} * {num2} =<strong className="bg-danger">{total}</strong>
       </h3>
     );
   }
@@ -285,11 +294,13 @@ export default class Quiz extends React.Component {
     const total = num1 * num2;
     return side === "left" ? (
       <h3 key={key}>
-        {total} : <strong>{first ? num2 : num1}</strong> ={first ? num1 : num2}
+        {total} : <strong className="bg-danger">{first ? num2 : num1}</strong> =
+        {first ? num1 : num2}
       </h3>
     ) : (
       <h3 key={key}>
-        {total} : {first ? num1 : num2} =<strong>{first ? num2 : num1}</strong>
+        {total} : {first ? num1 : num2} =
+        <strong className="bg-danger">{first ? num2 : num1}</strong>
       </h3>
     );
   }
@@ -313,7 +324,7 @@ export default class Quiz extends React.Component {
 
     return (
       <>
-        <div className="row justify-content-around">
+        <div className="row quiz justify-content-around">
           <div className="col">
             <div className="btn btn-success">
               Správně{" "}
@@ -326,12 +337,20 @@ export default class Quiz extends React.Component {
             </div>
           </div>
         </div>
-        <div className="row">
-          <div className="col">{this.renderWrong(wrong)}</div>
-        </div>
-        <div className="row">
+        {countW > 0 ? (
+          <div className="row quiz">
+            <div className="col">
+              <h2>Tady jsou ještě jednou tvé chybné odpovědi</h2>
+              {this.renderWrong(wrong)}
+            </div>
+          </div>
+        ) : null}
+        <div className="row quiz">
           <div className="col">
-            <button className="btn btn-primary" onClick={(e) => this.reload(e)}>
+            <button
+              className="btn btn-primary btn-lg"
+              onClick={(e) => this.reload(e)}
+            >
               Začít znovu
             </button>
           </div>
@@ -347,13 +366,18 @@ export default class Quiz extends React.Component {
     const done = this.state.done;
     const progress = ((position + 1 - wrong) / total) * 100 + "%";
     const progressWrong = (wrong / total) * 100 + "%";
+    // console.log(this.state.questions);
+    if (total === 0) {
+      return null;
+    }
+
     return (
       <div>
         {done ? (
           this.renderSummary()
         ) : (
           <>
-            <div className="progress">
+            <div className="progress no-radius">
               <div
                 className="progress-bar bg-info"
                 role="progressbar"

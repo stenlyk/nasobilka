@@ -1,5 +1,5 @@
 import React from "react";
-import Start from "./Start.js";
+import Start, { nums } from "./Start.js";
 import Quiz from "./Quiz.js";
 import { reactLocalStorage } from "reactjs-localstorage";
 
@@ -10,6 +10,8 @@ export default class Root extends React.Component {
       selected: { num: [1, 2, 3, 4], skils: { nas: true, del: true } },
       submited: false,
       error: "",
+      num: nums,
+      levels: { 10: "paper", 50: "bronze", 200: "silver", 500: "gold" },
     };
   }
 
@@ -67,30 +69,101 @@ export default class Root extends React.Component {
     );
   }
 
-  renderStat(stat) {
-    const nasArray = stat.nas;
-    const delArray = stat.del;
-    const nas = Object.keys(nasArray);
-    const del = Object.keys(delArray);
-    console.log(nas);
+  getLevel(points) {
+    const levels = this.state.levels;
+    const keys = Object.keys(levels);
+    let result = ["paper", 10];
+
+    keys.map((key, index, elm) => {
+      if (key < points) {
+        result =
+          index + 1 < keys.length
+            ? [levels[elm[index + 1]], elm[index + 1]]
+            : [levels[key], key];
+      }
+    });
+    return result;
+  }
+
+  renderStat(stats) {
+    // console.log(stats);
+    const nasArray = stats.nas;
+    const delArray = stats.del;
+
+    const num = this.state.num;
+    //console.log(this.getLevel(0));
+    let level = {};
+    let progressC = 0;
+    let progressW = 0;
+
     return (
       <>
-        <div class="row">
-          <div class="col">
-            <h5>Násobilka</h5>
-            {nas.map((i) => (
-              <p>
-                Násobilka {i}: {nasArray[i]}x
-              </p>
-            ))}
+        <div className="row stats">
+          <div className="col-md-6 col-sm-12">
+            <h4>Násobení</h4>
+            {num.map((i) => {
+              level = this.getLevel(nasArray[i]["correct"]);
+              progressC = (nasArray[i]["correct"] / level[1]) * 100 + "%";
+              progressW = (nasArray[i]["wrong"] / level[1]) * 100 + "%";
+              return (
+                <React.Fragment key={i}>
+                  <div className={"row align-items-center " + level[0]}>
+                    <div className="col-2">
+                      <div className="badge">{i}</div>
+                    </div>
+                    <div className="col">
+                      <div className="progress">
+                        <div
+                          className="progress-bar"
+                          style={{ width: progressC }}
+                        >
+                          {nasArray[i]["correct"]} / {level[1]}
+                        </div>
+                        <div
+                          className="progress-bar bg-danger"
+                          style={{ width: progressW }}
+                        >
+                          {nasArray[i]["wrong"]}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </React.Fragment>
+              );
+            })}
           </div>
-          <div class="col">
-            <h5>Dělení</h5>
-            {del.map((i) => (
-              <p>
-                Dělení {i}: {delArray[i]}x
-              </p>
-            ))}
+          <div className="col-md-6 col-sm-12">
+            <h4>Dělení</h4>
+            {num.map((i) => {
+              level = this.getLevel(delArray[i]["correct"]);
+              progressC = (delArray[i]["correct"] / level[1]) * 100 + "%";
+              progressW = (delArray[i]["wrong"] / level[1]) * 100 + "%";
+              return (
+                <React.Fragment key={i}>
+                  <div className={"row align-items-center " + level[0]}>
+                    <div className="col-2">
+                      <div className="badge">{i}</div>
+                    </div>
+                    <div className="col">
+                      <div className="progress">
+                        <div
+                          className="progress-bar"
+                          style={{ width: progressC }}
+                        >
+                          {delArray[i]["correct"]} / {level[1]}
+                        </div>
+                        <div
+                          className="progress-bar bg-danger"
+                          style={{ width: progressW }}
+                        >
+                          {delArray[i]["wrong"]}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </React.Fragment>
+              );
+            })}
           </div>
         </div>
       </>
@@ -98,33 +171,57 @@ export default class Root extends React.Component {
   }
 
   renderStats() {
+    const num = this.state.num;
     const wrong = reactLocalStorage.getObject("wrong", []);
     const correct = reactLocalStorage.getObject("correct", []);
-    let statsC = { nas: {}, del: {} };
-    let statsW = { nas: {}, del: {} };
+    let stats = { nas: {}, del: {}, today: { nas: {}, del: {} } };
+
+    num.map((val) => {
+      stats["nas"][val] = { correct: 0, wrong: 0 };
+      stats["del"][val] = { correct: 0, wrong: 0 };
+      stats["today"]["nas"][val] = { correct: 0, wrong: 0 };
+      stats["today"]["del"][val] = { correct: 0, wrong: 0 };
+      return null;
+    });
 
     correct.map(
       (elm) =>
-        (statsC[elm.method][elm.num2] = statsC[elm.method][elm.num2]
-          ? statsC[elm.method][elm.num2] + 1
+        (stats[elm.method][elm.num2]["correct"] = stats[elm.method][elm.num2][
+          "correct"
+        ]
+          ? stats[elm.method][elm.num2]["correct"] + 1
           : 1)
     );
     wrong.map(
       (elm) =>
-        (statsW[elm.method][elm.num2] = statsW[elm.method][elm.num2]
-          ? statsW[elm.method][elm.num2] + 1
+        (stats[elm.method][elm.num2]["wrong"] = stats[elm.method][elm.num2][
+          "wrong"
+        ]
+          ? stats[elm.method][elm.num2]["wrong"] + 1
           : 1)
     );
 
     return (
       <>
-        <div className="alert alert-success">
-          <h4 className="alert-heading">Správně</h4>
-          {this.renderStat(statsC)}
-        </div>
-        <div className="alert alert-danger">
-          <h4 className="alert-heading">Chybně</h4>
-          {this.renderStat(statsW)}
+        {this.renderStat(stats)}
+        <hr />
+        <div className="row text-left align-items-center">
+          <div className="col-1 paper">
+            <div className="badge">1</div>
+          </div>
+          <div className="col">Začátečník</div>
+          <div className="col-1 bronze">
+            <div className="badge">1</div>
+          </div>
+          <div className="col">Bronzová úroveň</div>
+          <div className="col-1 silver">
+            <div className="badge">1</div>
+          </div>
+          <div className="col">Stříbrná úroveň</div>
+          <div className="col-1 gold">
+            <div className="badge">1</div>
+          </div>
+          <div className="col">Zlatá úroveň</div>
         </div>
       </>
     );
@@ -135,27 +232,27 @@ export default class Root extends React.Component {
     const error = this.state.error;
     return (
       <>
-        <div className="row">
-          <div className="col">
-            {error !== "" ? (
-              <div className="alert alert-danger">{error}</div>
-            ) : (
-              ""
-            )}
-            {submited ? this.renderQuiz() : this.renderStart()}
-          </div>
-        </div>
         {!submited ? (
-          <>
+          <div className="container">
+            <div className="row">
+              <div className="col">
+                {error !== "" ? (
+                  <div className="alert alert-danger">{error}</div>
+                ) : (
+                  ""
+                )}
+                {this.renderStart()}
+              </div>
+            </div>
             <div className="row">
               <div className="col">
                 <h4>Tvoje výsledky</h4>
               </div>
             </div>
             {this.renderStats()}
-          </>
+          </div>
         ) : (
-          ""
+          this.renderQuiz()
         )}
       </>
     );

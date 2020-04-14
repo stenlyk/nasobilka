@@ -1,10 +1,12 @@
 import React from "react";
 
+export const nums = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
+
 export default class Start extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      num: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
+      num: nums,
       skils: { nas: "Násobení", del: "Dělení" },
     };
   }
@@ -12,7 +14,7 @@ export default class Start extends React.Component {
   renderNumber(num) {
     const checked = this.props.selected.num.indexOf(num);
     return (
-      <div key={num} className="form-check form-check-inline">
+      <div key={num} className="form-check form-check-button">
         <input
           className="form-check-input"
           type="checkbox"
@@ -30,9 +32,9 @@ export default class Start extends React.Component {
   }
 
   renderSkils(val, key) {
-    console.log(this.props.selected.skils[key] === true);
+    // console.log(this.props.selected.skils[key] === true);
     return (
-      <div key={key} className="form-check form-check-inline">
+      <div key={key} className="form-check form-check-button">
         <input
           className="form-check-input"
           type="checkbox"
@@ -51,7 +53,7 @@ export default class Start extends React.Component {
 
   render() {
     return (
-      <div>
+      <div className="start">
         <form onSubmit={this.props.onSubmit}>
           <div className="row">
             <div className="col">
@@ -67,7 +69,11 @@ export default class Start extends React.Component {
           </div>
           <div className="row">
             <div className="col">
-              <input type="submit" className="btn btn-primary" value="Start" />
+              <input
+                type="submit"
+                className="btn btn-success btn-lg"
+                value="    Začít počítat    "
+              />
             </div>
           </div>
         </form>
