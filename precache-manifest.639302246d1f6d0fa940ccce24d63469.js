@@ -1,6 +1,6 @@
 self.__precacheManifest = (self.__precacheManifest || []).concat([
   {
-    "revision": "18bf978e5fd4bc2d29453fa15e71366c",
+    "revision": "791903de88ed8469cda6e0468359744f",
     "url": "/nasobilka/index.html"
   },
   {
@@ -8,8 +8,8 @@ self.__precacheManifest = (self.__precacheManifest || []).concat([
     "url": "/nasobilka/static/css/2.de424728.chunk.css"
   },
   {
-    "revision": "09d19b480b8bb6362eb8",
-    "url": "/nasobilka/static/css/main.5f361e03.chunk.css"
+    "revision": "053ec5a100ac6bb423d8",
+    "url": "/nasobilka/static/css/main.b438a108.chunk.css"
   },
   {
     "revision": "d90d394835675f63bb86",
@@ -20,8 +20,8 @@ self.__precacheManifest = (self.__precacheManifest || []).concat([
     "url": "/nasobilka/static/js/2.0e567ad7.chunk.js.LICENSE.txt"
   },
   {
-    "revision": "09d19b480b8bb6362eb8",
-    "url": "/nasobilka/static/js/main.30e1def9.chunk.js"
+    "revision": "053ec5a100ac6bb423d8",
+    "url": "/nasobilka/static/js/main.155a1b75.chunk.js"
   },
   {
     "revision": "50b30312615d1e968759",
