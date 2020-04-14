@@ -1,0 +1,25 @@
+{
+  "files": {
+    "main.css": "/nasobilka/static/css/main.5f361e03.chunk.css",
+    "main.js": "/nasobilka/static/js/main.30e1def9.chunk.js",
+    "main.js.map": "/nasobilka/static/js/main.30e1def9.chunk.js.map",
+    "runtime-main.js": "/nasobilka/static/js/runtime-main.1d8c8b0b.js",
+    "runtime-main.js.map": "/nasobilka/static/js/runtime-main.1d8c8b0b.js.map",
+    "static/css/2.de424728.chunk.css": "/nasobilka/static/css/2.de424728.chunk.css",
+    "static/js/2.0e567ad7.chunk.js": "/nasobilka/static/js/2.0e567ad7.chunk.js",
+    "static/js/2.0e567ad7.chunk.js.map": "/nasobilka/static/js/2.0e567ad7.chunk.js.map",
+    "index.html": "/nasobilka/index.html",
+    "precache-manifest.45bf1156687256dec1e21ff487a68edc.js": "/nasobilka/precache-manifest.45bf1156687256dec1e21ff487a68edc.js",
+    "service-worker.js": "/nasobilka/service-worker.js",
+    "static/css/2.de424728.chunk.css.map": "/nasobilka/static/css/2.de424728.chunk.css.map",
+    "static/css/main.5f361e03.chunk.css.map": "/nasobilka/static/css/main.5f361e03.chunk.css.map",
+    "static/js/2.0e567ad7.chunk.js.LICENSE.txt": "/nasobilka/static/js/2.0e567ad7.chunk.js.LICENSE.txt"
+  },
+  "entrypoints": [
+    "static/js/runtime-main.1d8c8b0b.js",
+    "static/css/2.de424728.chunk.css",
+    "static/js/2.0e567ad7.chunk.js",
+    "static/css/main.5f361e03.chunk.css",
+    "static/js/main.30e1def9.chunk.js"
+  ]
+}
