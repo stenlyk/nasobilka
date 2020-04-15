@@ -49,12 +49,21 @@ export default class Root extends React.Component {
     event.preventDefault();
   }
 
+  leave(event) {
+    this.setState({ submited: false });
+    event.preventDefault();
+  }
+
   renderStart() {
+    const wrong = reactLocalStorage.getObject("wrong", []);
+    const correct = reactLocalStorage.getObject("correct", []);
+    const total = wrong.length + correct.length;
     return (
       <Start
         onChange={(e) => this.handleChange(e)}
         onSubmit={(e) => this.handleSubmit(e)}
         selected={this.state.selected}
+        total={total}
       />
     );
   }
@@ -74,7 +83,7 @@ export default class Root extends React.Component {
     const keys = Object.keys(levels);
     let result = ["paper", 10];
 
-    keys.map((key, index, elm) => {
+    keys.forEach((key, index, elm) => {
       if (key < points) {
         result =
           index + 1 < keys.length
@@ -235,24 +244,37 @@ export default class Root extends React.Component {
         {!submited ? (
           <div className="container">
             <div className="row">
-              <div className="col">
-                {error !== "" ? (
-                  <div className="alert alert-danger">{error}</div>
-                ) : (
-                  ""
-                )}
-                {this.renderStart()}
+              <div className="col-lg-6 col-sm-12">
+                <div className="box">
+                  {error !== "" ? (
+                    <div className="alert alert-danger">{error}</div>
+                  ) : (
+                    ""
+                  )}
+                  {this.renderStart()}
+                </div>
+              </div>
+              <div className="col-lg-6 col-sm-12">
+                <div className="box">
+                  <h4>Tvoje výsledky</h4>
+                  {this.renderStats()}
+                </div>
               </div>
             </div>
-            <div className="row">
-              <div className="col">
-                <h4>Tvoje výsledky</h4>
-              </div>
-            </div>
-            {this.renderStats()}
           </div>
         ) : (
-          this.renderQuiz()
+          <div className="row align-content-center">
+            <div className="col-6 col-sm-12">
+              <a href="#leave" onClick={(e) => this.leave(e)}>
+                <img
+                  src={process.env.PUBLIC_URL + "/ic-close.svg"}
+                  alt="Odejít"
+                />
+                Odejít
+              </a>
+              <div className="box">{this.renderQuiz()}</div>
+            </div>
+          </div>
         )}
       </>
     );

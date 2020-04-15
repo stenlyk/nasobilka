@@ -14,9 +14,8 @@ export default class Start extends React.Component {
   renderNumber(num) {
     const checked = this.props.selected.num.indexOf(num);
     return (
-      <div key={num} className="form-check form-check-button">
+      <React.Fragment key={num}>
         <input
-          className="form-check-input"
           type="checkbox"
           name="num"
           value={num}
@@ -24,19 +23,18 @@ export default class Start extends React.Component {
           id={"input" + num}
           onChange={this.props.onChange}
         />
-        <label className="form-check-label" htmlFor={"input" + num}>
+        <label className="checkbox" htmlFor={"input" + num}>
           {num}
         </label>
-      </div>
+      </React.Fragment>
     );
   }
 
   renderSkils(val, key) {
     // console.log(this.props.selected.skils[key] === true);
     return (
-      <div key={key} className="form-check form-check-button">
+      <React.Fragment key={key}>
         <input
-          className="form-check-input"
           type="checkbox"
           name={key}
           value={true}
@@ -44,10 +42,10 @@ export default class Start extends React.Component {
           id={"input" + key}
           onChange={this.props.onChange}
         />
-        <label className="form-check-label" htmlFor={"input" + key}>
+        <label className="checkbox" htmlFor={"input" + key}>
           {val}
         </label>
-      </div>
+      </React.Fragment>
     );
   }
 
@@ -55,23 +53,35 @@ export default class Start extends React.Component {
     return (
       <div className="start">
         <form onSubmit={this.props.onSubmit}>
-          <div className="row">
-            <div className="col">
-              {this.state.num.map((num) => this.renderNumber(num))}
-            </div>
+          <h4>S jakými čísli chceš počítat?</h4>
+          <div className="justify-content-between">
+            <input
+              type="checkbox"
+              value={true}
+              checked={false}
+              onChange={this.props.onChange}
+              id="inputAll"
+            />
+            <label className="checkbox" htmlFor={"inputAll"}>
+              Vše
+            </label>
+            {this.state.num.map((num) => this.renderNumber(num))}
           </div>
-          <div className="row">
-            <div className="col">
-              {Object.keys(this.state.skils).map((key) =>
-                this.renderSkils(this.state.skils[key], key)
-              )}
-            </div>
+          <h4>Co chceš trénovat?</h4>
+          <div className="justify-content-between">
+            {Object.keys(this.state.skils).map((key) =>
+              this.renderSkils(this.state.skils[key], key)
+            )}
           </div>
-          <div className="row">
-            <div className="col">
+          <hr />
+          <div className="row align-items-center">
+            <div className="col light-text">
+              {this.props.total} dokončených testů
+            </div>
+            <div className="col text-right">
               <input
                 type="submit"
-                className="btn btn-success btn-lg"
+                className="btn"
                 value="    Začít počítat    "
               />
             </div>
