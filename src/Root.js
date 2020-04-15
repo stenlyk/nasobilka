@@ -263,9 +263,9 @@ export default class Root extends React.Component {
             </div>
           </div>
         ) : (
-          <div className="row align-content-center">
-            <div className="col-6 col-sm-12">
-              <a href="#leave" onClick={(e) => this.leave(e)}>
+          <div className="row justify-content-center">
+            <div className="col-md-5 col-sm-12">
+              <a href="#leave" className="leave" onClick={(e) => this.leave(e)}>
                 <img
                   src={process.env.PUBLIC_URL + "/ic-close.svg"}
                   alt="Odejít"

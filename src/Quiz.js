@@ -176,26 +176,27 @@ export default class Quiz extends React.Component {
     const first = q.first;
     return (
       <>
-        <div className="row quiz">
+        <div className="row question justify-content-center align-items-center">
           <div className="col">
             {method === "nas"
               ? this.renderMultiplication(num1, num2, side, first)
               : this.renderDivade(num1, num2, side, first)}
           </div>
         </div>
-        <div className="row quiz">
+        {submited ? (
+          <div className={"alert alert-" + correctAnswerState}>
+            {correctAnswer}
+          </div>
+        ) : (
+          <div className="alert"></div>
+        )}
+        <div className="row text-right">
           <div className="col">
-            {!submited ? (
-              <input
-                type="submit"
-                className="btn btn-primary btn-lg"
-                value="Zkontrolovat"
-              />
-            ) : (
-              <div className={"alert alert-" + correctAnswerState}>
-                {correctAnswer}
-              </div>
-            )}
+            <input
+              type="submit"
+              className="btn btn-primary btn-lg"
+              value="Zkontrolovat"
+            />
           </div>
         </div>
       </>
@@ -206,7 +207,7 @@ export default class Quiz extends React.Component {
     const key = "nas|" + side + "|" + first + "|" + num1 + "|" + num2;
     return side === "left" ? (
       <h2>
-        {first ? num1 : num2} *{" "}
+        {first ? num1 : num2} <span className="mul">*</span>{" "}
         <input
           key={key}
           type="number"
@@ -218,11 +219,12 @@ export default class Quiz extends React.Component {
           autoFocus
           onChange={(e) => this.handleChange(e)}
         />{" "}
-        ={num1 * num2}
+        <span>=</span>
+        {num1 * num2}
       </h2>
     ) : (
       <h2>
-        {num1} * {num2} ={" "}
+        {num1} <span className="mul">*</span> {num2} <span>=</span>{" "}
         <input
           key={key}
           type="number"
@@ -242,7 +244,7 @@ export default class Quiz extends React.Component {
     const total = num1 * num2;
     return side === "left" ? (
       <h2>
-        {total} :{" "}
+        {total} <span className="div">:</span>{" "}
         <input
           key={key}
           type="number"
@@ -254,11 +256,13 @@ export default class Quiz extends React.Component {
           autoFocus
           onChange={(e) => this.handleChange(e)}
         />{" "}
-        ={first ? num1 : num2}
+        <span>=</span>
+        {first ? num1 : num2}
       </h2>
     ) : (
       <h2>
-        {total} : {first ? num1 : num2} ={" "}
+        {total} <span className="div">:</span> {first ? num1 : num2}{" "}
+        <span>=</span>{" "}
         <input
           key={key}
           type="number"
@@ -382,16 +386,7 @@ export default class Quiz extends React.Component {
                 className="progress-bar bg-info"
                 role="progressbar"
                 style={{ width: progress }}
-              >
-                {position + 1 - wrong} / {total}
-              </div>
-              <div
-                className="progress-bar bg-danger"
-                role="progressbar"
-                style={{ width: progressWrong }}
-              >
-                {wrong} / {total}
-              </div>
+              ></div>
             </div>
             <form onSubmit={(e) => this.handleSubmit(e)} autoComplete="off">
               {this.renderQuestion()}
