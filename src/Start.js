@@ -76,14 +76,16 @@ export default class Start extends React.Component {
           <hr />
           <div className="row align-items-center">
             <div className="col light-text">
-              {this.props.total} dokončených testů
+              {this.props.total} dokončených příkladů
             </div>
             <div className="col text-right">
-              <input
-                type="submit"
-                className="btn"
-                value="    Začít počítat    "
-              />
+              <button type="submit" className="btn">
+                <img
+                  src={process.env.PUBLIC_URL + "/ic-next-white.svg"}
+                  alt="Počítáš na jedničku"
+                />{" "}
+                Začít počítat
+              </button>
             </div>
           </div>
         </form>

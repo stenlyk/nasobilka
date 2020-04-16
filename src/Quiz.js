@@ -1,8 +1,6 @@
 import React from "react";
 import { reactLocalStorage } from "reactjs-localstorage";
 
-const examples = 10;
-
 export default class Quiz extends React.Component {
   constructor(props) {
     super(props);
@@ -50,7 +48,7 @@ export default class Quiz extends React.Component {
     if (Object.keys(questions).length > position) {
       const key = Object.keys(questions)[position];
       const q = questions[key];
-      let timeout = 3000;
+      let timeout = 300;
       this.setState({
         submited: true,
       });
@@ -65,7 +63,7 @@ export default class Quiz extends React.Component {
           correctAnswer: "Správně!",
           correctAnswerState: "success",
         });
-        timeout = 1000;
+        timeout = 100;
       } else {
         let corect = this.getCorrectAnswer(q);
         let lsWrong = reactLocalStorage.getObject("wrong", []);
@@ -110,6 +108,27 @@ export default class Quiz extends React.Component {
       return question.num2;
     }
     return question.num1;
+  }
+
+  setDone(event, victory) {
+    const questions = this.state.questions;
+    if (victory) {
+      this.setState({
+        done: true,
+        answers: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
+        position: 10,
+      });
+    } else {
+      this.setState({
+        done: true,
+        answers: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
+        position: 10,
+        wrong: Object.entries(questions)
+          .slice(0, 4)
+          .map((entry) => entry[1]),
+      });
+    }
+    event.preventDefault();
   }
 
   generateQuestions() {
@@ -195,11 +214,7 @@ export default class Quiz extends React.Component {
         )}
         <div className="row text-right">
           <div className="col">
-            <input
-              type="submit"
-              className="btn btn-primary btn-lg"
-              value="Zkontrolovat"
-            />
+            <input type="submit" className="btn" value="Zkontrolovat" />
           </div>
         </div>
       </>
@@ -285,13 +300,13 @@ export default class Quiz extends React.Component {
     const key = "nas|" + side + "|" + first + "|" + num1 + "|" + num2;
     return side === "left" ? (
       <h3 key={key}>
-        {first ? num1 : num2} *
-        <strong className="bg-danger">{first ? num2 : num1}</strong> =
+        {first ? num1 : num2} *{" "}
+        <strong className="bg-danger">{first ? num2 : num1}</strong> ={" "}
         {num1 * num2}
       </h3>
     ) : (
       <h3 key={key}>
-        {num1} * {num2} =<strong className="bg-danger">{total}</strong>
+        {num1} * {num2} = <strong className="bg-danger">{total}</strong>
       </h3>
     );
   }
@@ -301,12 +316,12 @@ export default class Quiz extends React.Component {
     const total = num1 * num2;
     return side === "left" ? (
       <h3 key={key}>
-        {total} : <strong className="bg-danger">{first ? num2 : num1}</strong> =
+        {total} : <strong className="bg-danger">{first ? num2 : num1}</strong> ={" "}
         {first ? num1 : num2}
       </h3>
     ) : (
       <h3 key={key}>
-        {total} : {first ? num1 : num2} =
+        {total} : {first ? num1 : num2} ={" "}
         <strong className="bg-danger">{first ? num2 : num1}</strong>
       </h3>
     );
@@ -316,9 +331,15 @@ export default class Quiz extends React.Component {
     const items = Object.keys(wrong);
     return items.map((key) => {
       const w = wrong[key];
-      return w.method === "nas"
-        ? this.renderViewMultiplication(w.num1, w.num2, w.side, w.first)
-        : this.renderViewDivade(w.num1, w.num2, w.side, w.first);
+      return w.method === "nas" ? (
+        <div className="col-6" key={key}>
+          {this.renderViewMultiplication(w.num1, w.num2, w.side, w.first)}
+        </div>
+      ) : (
+        <div className="col-6" key={key}>
+          {this.renderViewDivade(w.num1, w.num2, w.side, w.first)}
+        </div>
+      );
     });
   }
 
@@ -329,31 +350,62 @@ export default class Quiz extends React.Component {
     const countQ = Object.keys(questions).length;
     const countW = Object.keys(wrong).length;
 
+    const titles = [
+      "Excelentně!",
+      "Výborně.",
+      "Skvěle.",
+      "Dobrá práce.",
+      "Ještě to chce zlepšit.",
+      "Trénink dělá mistra.",
+      "Nevěš hlavu a trénuj.",
+      "Zkusto znovu a lépe.",
+      "Zkusto znovu a lépe.",
+      "Tak to se nepovedlo.",
+      "Trénuj, trénuj, trénuj!",
+    ];
+
     return (
       <>
+        <h4 className="text-center quizHeader">{titles[countW]}</h4>
+        <h5 className="text-center quizHeader">Koukni jak ti to šlo.</h5>
         <div className="row quiz justify-content-around">
           <div className="col">
-            <div className="btn btn-success">
-              Správně{" "}
-              <span className="badge badge-light">{countQ - countW}</span>
+            <div className="badge success">
+              <img
+                src={process.env.PUBLIC_URL + "/ic-good-badge.svg"}
+                alt="x"
+              />
+              <span>{countQ - countW}</span>
+              <h4>Správně</h4>
             </div>
           </div>
-          <div className="col">
-            <div className="btn btn-danger">
-              Chybně <span className="badge badge-light">{countW}</span>
+          {countW !== 0 ? (
+            <div className="col">
+              <div className="badge danger">
+                <img
+                  src={process.env.PUBLIC_URL + "/ic-wrong-badge.svg"}
+                  alt="x"
+                />
+                <span>{countW}</span>
+                <h4>Chybně</h4>
+              </div>
             </div>
-          </div>
+          ) : null}
         </div>
         {countW > 0 ? (
-          <div className="row quiz">
-            <div className="col">
-              <h2>Tady jsou ještě jednou tvé chybné odpovědi</h2>
-              {this.renderWrong(wrong)}
+          <>
+            <hr />
+            <div className="row quiz">
+              <div className="col">
+                <h4>Pojď, projdeme tvé chybné odpovědi</h4>
+                <div className="row resume">{this.renderWrong(wrong)}</div>
+              </div>
             </div>
-          </div>
+          </>
         ) : null}
+        <hr />
         <div className="row quiz">
-          <div className="col">
+          <div className="col text-right">
             <button
               className="btn btn-primary btn-lg"
               onClick={(e) => this.reload(e)}
@@ -377,31 +429,32 @@ export default class Quiz extends React.Component {
     }
 
     return (
-      <div>
-        {done ? (
-          this.renderSummary()
-        ) : (
-          <>
-            <div className="progress justify-content-between">
-              {total.map((key, i) => {
-                console.log(key, wrong[key], i, position);
-                let status = "";
-                if (i < position) {
-                  status = wrong[key] ? "danger" : "success";
-                }
-                if (i === position) {
-                  status = "current";
-                }
+      <>
+        <div>
+          {done ? (
+            this.renderSummary()
+          ) : (
+            <>
+              <div className="progress justify-content-between">
+                {total.map((key, i) => {
+                  let status = "";
+                  if (i < position) {
+                    status = wrong[key] ? "danger" : "success";
+                  }
+                  if (i === position) {
+                    status = "current";
+                  }
 
-                return <div key={i} className={status + " bullet"}></div>;
-              })}
-            </div>
-            <form onSubmit={(e) => this.handleSubmit(e)} autoComplete="off">
-              {this.renderQuestion()}
-            </form>
-          </>
-        )}
-      </div>
+                  return <div key={i} className={status + " bullet"}></div>;
+                })}
+              </div>
+              <form onSubmit={(e) => this.handleSubmit(e)} autoComplete="off">
+                {this.renderQuestion()}
+              </form>
+            </>
+          )}
+        </div>
+      </>
     );
   }
 }

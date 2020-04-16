@@ -2,6 +2,7 @@ import React from "react";
 import Start, { nums } from "./Start.js";
 import Quiz from "./Quiz.js";
 import { reactLocalStorage } from "reactjs-localstorage";
+import CircleGraph from "./CircleGraph.js";
 
 export default class Root extends React.Component {
   constructor(props) {
@@ -11,7 +12,8 @@ export default class Root extends React.Component {
       submited: false,
       error: "",
       num: nums,
-      levels: { 10: "paper", 50: "bronze", 200: "silver", 500: "gold" },
+      levels: { 20: "green", 50: "orange", 200: "silver", 500: "gold" },
+      tab: "nas",
     };
   }
 
@@ -39,7 +41,7 @@ export default class Root extends React.Component {
     const selected = this.state.selected;
 
     if (selected.num.length > 0 && (selected.skils.nas || selected.skils.del)) {
-      this.setState({ submited: true });
+      this.setState({ submited: true, error: "" });
     } else {
       this.setState({
         error: "Vyber alespoň jedno číslo a zvol násobení nebo dělení.",
@@ -52,6 +54,10 @@ export default class Root extends React.Component {
   leave(event) {
     this.setState({ submited: false });
     event.preventDefault();
+  }
+
+  switchTab(event) {
+    this.setState({ tab: event.target.value });
   }
 
   renderStart() {
@@ -81,7 +87,7 @@ export default class Root extends React.Component {
   getLevel(points) {
     const levels = this.state.levels;
     const keys = Object.keys(levels);
-    let result = ["paper", 10];
+    let result = ["green", 20];
 
     keys.forEach((key, index, elm) => {
       if (key < points) {
@@ -96,83 +102,61 @@ export default class Root extends React.Component {
 
   renderStat(stats) {
     // console.log(stats);
-    const nasArray = stats.nas;
-    const delArray = stats.del;
+    const tab = this.state.tab;
+    let data = stats.nas;
+    if (this.state.tab !== "nas") {
+      data = stats.del;
+    }
 
     const num = this.state.num;
     //console.log(this.getLevel(0));
     let level = {};
-    let progressC = 0;
-    let progressW = 0;
+    let percent = 0;
 
     return (
       <>
-        <div className="row stats">
-          <div className="col-md-6 col-sm-12">
-            <h4>Násobení</h4>
-            {num.map((i) => {
-              level = this.getLevel(nasArray[i]["correct"]);
-              progressC = (nasArray[i]["correct"] / level[1]) * 100 + "%";
-              progressW = (nasArray[i]["wrong"] / level[1]) * 100 + "%";
-              return (
-                <React.Fragment key={i}>
-                  <div className={"row align-items-center " + level[0]}>
-                    <div className="col-2">
-                      <div className="badge">{i}</div>
-                    </div>
-                    <div className="col">
-                      <div className="progress">
-                        <div
-                          className="progress-bar"
-                          style={{ width: progressC }}
-                        >
-                          {nasArray[i]["correct"]} / {level[1]}
-                        </div>
-                        <div
-                          className="progress-bar bg-danger"
-                          style={{ width: progressW }}
-                        >
-                          {nasArray[i]["wrong"]}
-                        </div>
-                      </div>
-                    </div>
+        <div className="radio-bar">
+          <input
+            type="radio"
+            name="tab"
+            value="nas"
+            id="nas"
+            checked={tab === "nas" ? true : false}
+            onChange={(e) => this.switchTab(e)}
+          />
+          <label htmlFor="nas">Násobení</label>
+          <input
+            type="radio"
+            name="tab"
+            value="del"
+            id="del"
+            checked={tab === "del" ? true : false}
+            onChange={(e) => this.switchTab(e)}
+          />
+          <label htmlFor="del">Ďelení</label>
+        </div>
+        <div className="row">
+          <div className="col">
+            <div className="justify-content-between flex-wrap">
+              {num.map((i) => {
+                level = this.getLevel(data[i]["correct"]);
+                percent = (data[i]["correct"] / level[1]) * 100;
+                return (
+                  <div className="graph" key={i}>
+                    <CircleGraph percent={percent} label={i} />
+                    <img
+                      src={
+                        process.env.PUBLIC_URL +
+                        "/ic-" +
+                        level[0] +
+                        "-badge.svg"
+                      }
+                      alt={level[0]}
+                    />
                   </div>
-                </React.Fragment>
-              );
-            })}
-          </div>
-          <div className="col-md-6 col-sm-12">
-            <h4>Dělení</h4>
-            {num.map((i) => {
-              level = this.getLevel(delArray[i]["correct"]);
-              progressC = (delArray[i]["correct"] / level[1]) * 100 + "%";
-              progressW = (delArray[i]["wrong"] / level[1]) * 100 + "%";
-              return (
-                <React.Fragment key={i}>
-                  <div className={"row align-items-center " + level[0]}>
-                    <div className="col-2">
-                      <div className="badge">{i}</div>
-                    </div>
-                    <div className="col">
-                      <div className="progress">
-                        <div
-                          className="progress-bar"
-                          style={{ width: progressC }}
-                        >
-                          {delArray[i]["correct"]} / {level[1]}
-                        </div>
-                        <div
-                          className="progress-bar bg-danger"
-                          style={{ width: progressW }}
-                        >
-                          {delArray[i]["wrong"]}
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </React.Fragment>
-              );
-            })}
+                );
+              })}
+            </div>
           </div>
         </div>
       </>
@@ -214,23 +198,35 @@ export default class Root extends React.Component {
       <>
         {this.renderStat(stats)}
         <hr />
-        <div className="row text-left align-items-center">
-          <div className="col-1 paper">
-            <div className="badge">1</div>
+        <div className="row legned info align-items-center">
+          <div className="col-6">
+            <img
+              src={process.env.PUBLIC_URL + "/ic-green-badge.svg"}
+              alt="Zelenáč"
+            />{" "}
+            <span>Zlenáč</span>
           </div>
-          <div className="col">Začátečník</div>
-          <div className="col-1 bronze">
-            <div className="badge">1</div>
+          <div className="col-6">
+            <img
+              src={process.env.PUBLIC_URL + "/ic-orange-badge.svg"}
+              alt="Chce to ještě trénink"
+            />{" "}
+            <span>Chce to ještě trénink</span>
           </div>
-          <div className="col">Bronzová úroveň</div>
-          <div className="col-1 silver">
-            <div className="badge">1</div>
+          <div className="col-6">
+            <img
+              src={process.env.PUBLIC_URL + "/ic-silver-badge.svg"}
+              alt="Už jen kousek k cíli"
+            />{" "}
+            <span>Už jen kousek k cíli</span>
           </div>
-          <div className="col">Stříbrná úroveň</div>
-          <div className="col-1 gold">
-            <div className="badge">1</div>
+          <div className="col-6">
+            <img
+              src={process.env.PUBLIC_URL + "/ic-gold-badge.svg"}
+              alt="Počítáš na jedničku"
+            />{" "}
+            <span>Počítáš na jedničku</span>
           </div>
-          <div className="col">Zlatá úroveň</div>
         </div>
       </>
     );
