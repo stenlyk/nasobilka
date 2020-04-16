@@ -48,7 +48,7 @@ export default class Quiz extends React.Component {
     if (Object.keys(questions).length > position) {
       const key = Object.keys(questions)[position];
       const q = questions[key];
-      let timeout = 300;
+      let timeout = 2000;
       this.setState({
         submited: true,
       });
@@ -63,7 +63,7 @@ export default class Quiz extends React.Component {
           correctAnswer: "Správně!",
           correctAnswerState: "success",
         });
-        timeout = 100;
+        timeout = 800;
       } else {
         let corect = this.getCorrectAnswer(q);
         let lsWrong = reactLocalStorage.getObject("wrong", []);

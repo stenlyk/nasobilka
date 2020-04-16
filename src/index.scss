@@ -4,7 +4,7 @@ body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   background: #f4f5f5;
-  font-size: 14px;
+  font-size: 16px;
   color: #000;
   font-weight: 500;
 }
@@ -20,7 +20,7 @@ h6 {
 }
 
 h4 {
-  font-size: 16px;
+  font-size: 18px;
   line-height: 1.25;
 }
 
@@ -94,9 +94,9 @@ button {
   border-radius: 4px;
   box-shadow: inset 0 -2px 0 0 #0055a8;
   background-color: #006edb;
-  padding: 8px 12px;
+  padding: 8px 16px;
   color: #fff;
-  font-size: 14px;
+  font-size: 16px;
   line-height: 1.14;
   border: none;
   height: 40px;
@@ -105,6 +105,9 @@ button {
   &:hover {
     box-shadow: inset 0 -2px 0 0 #006edb;
     background-color: #0054a8;
+  }
+  img {
+    margin-right: 16px;
   }
 }
 
@@ -147,7 +150,22 @@ a {
     margin-right: 4px;
   }
 }
-
+.copy {
+  margin-left: 12px;
+  margin-right: 12px;
+  color: #999;
+  a {
+    display: inline;
+    color: #006edb;
+  }
+  .col-6 {
+    padding: 0;
+  }
+  .col-6:last-child {
+    margin-left: auto;
+    text-align: right;
+  }
+}
 .question {
   font-size: 40px;
   color: #000;
@@ -237,7 +255,7 @@ a {
 }
 
 .info {
-  .col-6 {
+  .col-md-6 {
     align-items: center;
     align-self: center;
     display: flex;
@@ -268,7 +286,7 @@ a {
 
 .legned {
   margin-top: 15px;
-  .col-6 {
+  .col-md-6 {
     padding-top: 5px;
   }
 }
@@ -336,8 +354,6 @@ h5.quizHeader {
   animation: circle-chart-fill 2s reverse; /* 1 */
   transform: rotate(-90deg); /* 2, 3 */
   transform-origin: center; /* 4 */
-  stroke: conic-gradient(from 0.5turn, #006eda, #8ac5ff 0.08turn, #006eda);
-  background: conic-gradient(from 0.5turn, #006eda, #8ac5ff 0.08turn, #006eda);
 }
 .circle-chart__info {
   animation: circle-chart-appear 2s forwards;
@@ -363,5 +379,81 @@ h5.quizHeader {
   left: auto;
   &:last-child {
     left: 200px;
+  }
+}
+
+@media (max-width: 576px) {
+  body {
+    font-size: 12px;
+  }
+  .logo {
+    margin-top: 42px;
+    margin-bottom: 20px;
+  }
+  .copy {
+    margin-bottom: 40px;
+  }
+  .graph {
+    margin-bottom: 12px;
+  }
+  .circle-chart {
+    width: 60px;
+    height: 60px;
+  }
+  .btn {
+    padding-left: 8px;
+    padding-right: 8px;
+    img {
+      margin-right: 4px;
+    }
+  }
+  label {
+    font-size: 16px;
+  }
+  .numbers {
+    flex-wrap: wrap;
+    .checkbox.all {
+      flex-basis: 100%;
+    }
+    .checkbox {
+      flex-basis: 17%;
+    }
+  }
+  .question {
+    margin-top: 30px;
+  }
+  .alert {
+    margin-bottom: 20px;
+  }
+}
+
+@media (max-width: 410px) {
+  body {
+    font-size: 12px;
+  }
+  .logo {
+    margin-top: 42px;
+    margin-bottom: 20px;
+  }
+  .circle-chart {
+    width: 50px;
+    height: 50px;
+  }
+  .btn {
+    padding-left: 10px;
+    padding-right: 10px;
+    img {
+      display: none;
+      margin-right: 0;
+    }
+  }
+  label {
+    font-size: 16px;
+  }
+  .question {
+    margin-top: 30px;
+  }
+  .alert {
+    margin-bottom: 20px;
   }
 }

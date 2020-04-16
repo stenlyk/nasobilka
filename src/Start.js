@@ -53,16 +53,21 @@ export default class Start extends React.Component {
     return (
       <div className="start">
         <form onSubmit={this.props.onSubmit}>
-          <h4>S jakými čísli chceš počítat?</h4>
-          <div className="justify-content-between">
+          <h4>S jakými čísly chceš počítat?</h4>
+          <div className="numbers justify-content-between">
             <input
               type="checkbox"
               value={true}
-              checked={false}
+              name="all"
+              checked={
+                this.props.selected.num.length === this.state.num.length
+                  ? true
+                  : false
+              }
               onChange={this.props.onChange}
               id="inputAll"
             />
-            <label className="checkbox" htmlFor={"inputAll"}>
+            <label className="checkbox all" htmlFor={"inputAll"}>
               Vše
             </label>
             {this.state.num.map((num) => this.renderNumber(num))}

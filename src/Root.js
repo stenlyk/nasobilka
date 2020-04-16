@@ -31,6 +31,14 @@ export default class Root extends React.Component {
           selected.num.splice(index, 1);
         }
       }
+    } else if (name === "all") {
+      console.log(target);
+      console.log(selected.num.length, nums.length);
+      if (selected.num.length === nums.length) {
+        selected.num = [];
+      } else {
+        selected.num = nums;
+      }
     } else {
       selected.skils[name] = target.checked;
     }
@@ -133,7 +141,7 @@ export default class Root extends React.Component {
             checked={tab === "del" ? true : false}
             onChange={(e) => this.switchTab(e)}
           />
-          <label htmlFor="del">Ďelení</label>
+          <label htmlFor="del">Dělení</label>
         </div>
         <div className="row">
           <div className="col">
@@ -199,28 +207,28 @@ export default class Root extends React.Component {
         {this.renderStat(stats)}
         <hr />
         <div className="row legned info align-items-center">
-          <div className="col-6">
+          <div className="col-md-6 col-sm-12">
             <img
               src={process.env.PUBLIC_URL + "/ic-green-badge.svg"}
               alt="Zelenáč"
             />{" "}
-            <span>Zlenáč</span>
+            <span>Zelenáč</span>
           </div>
-          <div className="col-6">
+          <div className="col-md-6 col-sm-12">
             <img
               src={process.env.PUBLIC_URL + "/ic-orange-badge.svg"}
               alt="Chce to ještě trénink"
             />{" "}
             <span>Chce to ještě trénink</span>
           </div>
-          <div className="col-6">
+          <div className="col-md-6 col-sm-12">
             <img
               src={process.env.PUBLIC_URL + "/ic-silver-badge.svg"}
               alt="Už jen kousek k cíli"
             />{" "}
             <span>Už jen kousek k cíli</span>
           </div>
-          <div className="col-6">
+          <div className="col-md-6 col-sm-12">
             <img
               src={process.env.PUBLIC_URL + "/ic-gold-badge.svg"}
               alt="Počítáš na jedničku"
@@ -248,6 +256,18 @@ export default class Root extends React.Component {
                     ""
                   )}
                   {this.renderStart()}
+                </div>
+                <div className="row copy">
+                  <div className="col-6">
+                    Made with{" "}
+                    <span role="img" aria-label="love">
+                      ❤️
+                    </span>{" "}
+                    by Standa
+                  </div>
+                  <div className="col-6">
+                    Designed by <a href="https://zarzicky.cz">Lukáš</a>
+                  </div>
                 </div>
               </div>
               <div className="col-lg-6 col-sm-12">
