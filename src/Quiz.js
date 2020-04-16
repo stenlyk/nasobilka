@@ -1,6 +1,8 @@
 import React from "react";
 import { reactLocalStorage } from "reactjs-localstorage";
 
+const examples = 10;
+
 export default class Quiz extends React.Component {
   constructor(props) {
     super(props);
@@ -60,7 +62,7 @@ export default class Quiz extends React.Component {
         reactLocalStorage.setObject("correct", lsCorrect);
 
         this.setState({
-          correctAnswer: "Správně",
+          correctAnswer: "Správně!",
           correctAnswerState: "success",
         });
         timeout = 1000;
@@ -157,7 +159,8 @@ export default class Quiz extends React.Component {
         side,
         first,
       };
-      this.setState({ questions: usedQuestions });
+
+      this.setState((state) => ({ ...state, questions: usedQuestions }));
     }
   }
 
@@ -364,14 +367,12 @@ export default class Quiz extends React.Component {
   }
 
   render() {
-    const total = Object.keys(this.state.questions).length;
-    const wrong = Object.keys(this.state.wrong).length;
+    const total = Object.keys(this.state.questions);
+    const wrong = this.state.wrong;
     const position = this.state.position;
     const done = this.state.done;
-    const progress = ((position + 1 - wrong) / total) * 100 + "%";
-    const progressWrong = (wrong / total) * 100 + "%";
     // console.log(this.state.questions);
-    if (total === 0) {
+    if (total.length === 0) {
       return null;
     }
 
@@ -381,12 +382,19 @@ export default class Quiz extends React.Component {
           this.renderSummary()
         ) : (
           <>
-            <div className="progress no-radius">
-              <div
-                className="progress-bar bg-info"
-                role="progressbar"
-                style={{ width: progress }}
-              ></div>
+            <div className="progress justify-content-between">
+              {total.map((key, i) => {
+                console.log(key, wrong[key], i, position);
+                let status = "";
+                if (i < position) {
+                  status = wrong[key] ? "danger" : "success";
+                }
+                if (i === position) {
+                  status = "current";
+                }
+
+                return <div key={i} className={status + " bullet"}></div>;
+              })}
             </div>
             <form onSubmit={(e) => this.handleSubmit(e)} autoComplete="off">
               {this.renderQuestion()}
