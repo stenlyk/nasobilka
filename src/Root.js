@@ -3,17 +3,28 @@ import Start, { nums } from "./Start.js";
 import Quiz from "./Quiz.js";
 import { reactLocalStorage } from "reactjs-localstorage";
 import CircleGraph from "./CircleGraph.js";
+import linq from "linq";
+const version = "0.1";
 
 export default class Root extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      selected: { num: [1, 2, 3, 4], skils: { nas: true, del: true } },
+      selected: {
+        num: [1, 2, 3, 4],
+        skils: { nas: true, del: true },
+      },
       submited: false,
       error: "",
       num: nums,
-      levels: { 20: "green", 50: "orange", 200: "silver", 500: "gold" },
+      levels: {
+        20: "green",
+        50: "orange",
+        200: "silver",
+        500: "gold",
+      },
       tab: "nas",
+      fixWrong: false,
     };
   }
 
@@ -49,7 +60,11 @@ export default class Root extends React.Component {
     const selected = this.state.selected;
 
     if (selected.num.length > 0 && (selected.skils.nas || selected.skils.del)) {
-      this.setState({ submited: true, error: "" });
+      this.setState({
+        submited: true,
+        error: "",
+        fixWrong: false,
+      });
     } else {
       this.setState({
         error: "Vyber alespoň jedno číslo a zvol násobení nebo dělení.",
@@ -59,8 +74,56 @@ export default class Root extends React.Component {
     event.preventDefault();
   }
 
+  componentDidMount() {
+    let localVersion = reactLocalStorage.get("version", "0");
+    if (localVersion !== version) {
+      if (localVersion === "0") {
+        let lsCorrect = reactLocalStorage.getObject("correct", []);
+        let lsWrong = reactLocalStorage.getObject("wrong", []);
+        reactLocalStorage.setObject("_correct", lsCorrect);
+        reactLocalStorage.setObject("_wrong", lsWrong);
+
+        for (let index = 0; index < lsCorrect.length; index++) {
+          let q = lsCorrect[index];
+          q.isCorrect = true;
+          q.points = 1;
+          q.id = new Date().valueOf() + index - 20000;
+          lsCorrect[index] = q;
+        }
+
+        for (let index = 0; index < lsWrong.length; index++) {
+          let q = lsWrong[index];
+          q.isCorrect = false;
+          q.points = 0;
+          q.id = new Date().valueOf() + index;
+          lsWrong[index] = q;
+        }
+
+        for (let index = 0; index < lsWrong.length; index++) {
+          lsCorrect.push(lsWrong[index]);
+        }
+
+        const newArray = linq
+          .from(lsCorrect)
+          .orderBy(function (x) {
+            return x.date;
+          })
+          .toArray();
+        reactLocalStorage.set("version", version);
+        reactLocalStorage.setObject("answers", newArray);
+        reactLocalStorage.remove("correct");
+        reactLocalStorage.remove("wrong");
+      }
+    }
+  }
+
+  doublePoints(event) {
+    this.setState({ submited: true, error: "", fixWrong: true });
+    event.preventDefault();
+  }
+
   leave(event) {
-    this.setState({ submited: false });
+    this.setState({ submited: false, fixWrong: false });
     event.preventDefault();
   }
 
@@ -68,16 +131,60 @@ export default class Root extends React.Component {
     this.setState({ tab: event.target.value });
   }
 
+  streak(arr) {
+    var i,
+      temp,
+      streak,
+      length = arr.length,
+      highestStreak = 0;
+
+    for (i = 0; i < length; i++) {
+      // check the value of the current entry against the last
+      if (temp !== "" && temp === arr[i]) {
+        // it's a match
+        streak++;
+      } else {
+        // it's not a match, start streak from 1
+        streak = 1;
+      }
+
+      // set current letter for next time
+      temp = arr[i];
+
+      // set the master streak var
+      if (streak > highestStreak) {
+        highestStreak = streak;
+      }
+    }
+
+    return highestStreak;
+  }
+
   renderStart() {
-    const wrong = reactLocalStorage.getObject("wrong", []);
-    const correct = reactLocalStorage.getObject("correct", []);
-    const total = wrong.length + correct.length;
+    const answeres = reactLocalStorage.getObject("answers", []);
+    const wrong = linq
+      .from(answeres)
+      .where(function (x) {
+        return x.isCorrect === false;
+      })
+      .count();
+    const fixed = linq
+      .from(answeres)
+      .where(function (x) {
+        return x.isCorrect === false && x.isFixed === true;
+      })
+      .count();
+
+    const total = answeres.length;
     return (
       <Start
         onChange={(e) => this.handleChange(e)}
         onSubmit={(e) => this.handleSubmit(e)}
+        doublePoints={(e) => this.doublePoints(e)}
         selected={this.state.selected}
         total={total}
+        wrong={wrong}
+        fixed={fixed}
       />
     );
   }
@@ -88,6 +195,8 @@ export default class Root extends React.Component {
         num={this.state.selected.num}
         nas={this.state.selected.skils.nas}
         del={this.state.selected.skils.del}
+        fixWrong={this.state.fixWrong}
+        leave={(e) => this.leave(e)}
       />
     );
   }
@@ -101,8 +210,8 @@ export default class Root extends React.Component {
       if (key < points) {
         result =
           index + 1 < keys.length
-            ? [levels[elm[index + 1]], elm[index + 1]]
-            : [levels[key], key];
+            ? [levels[elm[index + 1]], Number(elm[index + 1])]
+            : [levels[key], Number(key)];
       }
     });
     return result;
@@ -150,7 +259,11 @@ export default class Root extends React.Component {
                 level = this.getLevel(data[i]["correct"]);
                 percent = (data[i]["correct"] / level[1]) * 100;
                 return (
-                  <div className="graph" key={i}>
+                  <div
+                    className="graph"
+                    key={i}
+                    title={data[i]["correct"] + "/" + level[1]}
+                  >
                     <CircleGraph percent={percent} label={i} />
                     <img
                       src={
@@ -173,34 +286,37 @@ export default class Root extends React.Component {
 
   renderStats() {
     const num = this.state.num;
-    const wrong = reactLocalStorage.getObject("wrong", []);
-    const correct = reactLocalStorage.getObject("correct", []);
-    let stats = { nas: {}, del: {}, today: { nas: {}, del: {} } };
+    let answers = reactLocalStorage.getObject("answers", []);
+
+    // const dataStreak = linq.from(answers).select("$.isCorrect").toArray();
+    // let streak = this.streak(dataStreak);
+    // console.log(dataStreak, streak);
+
+    let data = linq
+      .from(answers)
+      .where(function (x) {
+        return x.isCorrect === true || x.isFixed === true;
+      })
+      .groupBy(
+        "{method: $.method, num2: $.num2}",
+        null,
+        "{ method: $.method, num2: $.num2, points: $$.sum('parseInt($.points)') }",
+        "$.method + $.num2"
+      )
+      .toArray();
+
+    let stats = {
+      nas: {},
+      del: {},
+    };
 
     num.map((val) => {
       stats["nas"][val] = { correct: 0, wrong: 0 };
       stats["del"][val] = { correct: 0, wrong: 0 };
-      stats["today"]["nas"][val] = { correct: 0, wrong: 0 };
-      stats["today"]["del"][val] = { correct: 0, wrong: 0 };
       return null;
     });
 
-    correct.map(
-      (elm) =>
-        (stats[elm.method][elm.num2]["correct"] = stats[elm.method][elm.num2][
-          "correct"
-        ]
-          ? stats[elm.method][elm.num2]["correct"] + 1
-          : 1)
-    );
-    wrong.map(
-      (elm) =>
-        (stats[elm.method][elm.num2]["wrong"] = stats[elm.method][elm.num2][
-          "wrong"
-        ]
-          ? stats[elm.method][elm.num2]["wrong"] + 1
-          : 1)
-    );
+    data.map((elm) => (stats[elm.method][elm.num2]["correct"] = elm.points));
 
     return (
       <>

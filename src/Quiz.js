@@ -1,5 +1,6 @@
 import React from "react";
 import { reactLocalStorage } from "reactjs-localstorage";
+import linq from "linq";
 
 export default class Quiz extends React.Component {
   constructor(props) {
@@ -21,7 +22,11 @@ export default class Quiz extends React.Component {
   }
 
   componentDidMount() {
-    this.generateQuestions();
+    if (this.props.fixWrong) {
+      this.generateQuestionsFromWrong();
+    } else {
+      this.generateQuestions();
+    }
   }
 
   reload(event) {
@@ -52,12 +57,33 @@ export default class Quiz extends React.Component {
       this.setState({
         submited: true,
       });
+      let lsAnswers = reactLocalStorage.getObject("answers", []);
+
       q.date = new Date().toISOString().slice(0, 10);
+      const id = new Date().valueOf();
 
       if (this.evaluate(q, answers[position])) {
-        let lsCorrect = reactLocalStorage.getObject("correct", []);
-        lsCorrect.push(q);
-        reactLocalStorage.setObject("correct", lsCorrect);
+        // FixWrong update old example
+        if (this.props.fixWrong) {
+          lsAnswers = lsAnswers.map((a) => {
+            return a.id === q.id && a.isCorrect === false
+              ? { ...a, isFixed: true, points: 1 }
+              : a;
+          });
+
+          let test = linq
+            .from(lsAnswers)
+            .where(function (x) {
+              return x.isFixed === true;
+            })
+            .toArray();
+          console.log(test);
+        }
+
+        q.points = 1;
+        q.id = id;
+        q.isCorrect = true;
+        lsAnswers.push(q);
 
         this.setState({
           correctAnswer: "Správně!",
@@ -65,19 +91,22 @@ export default class Quiz extends React.Component {
         });
         timeout = 800;
       } else {
-        let corect = this.getCorrectAnswer(q);
-        let lsWrong = reactLocalStorage.getObject("wrong", []);
-        lsWrong.push(q);
-        reactLocalStorage.setObject("wrong", lsWrong);
+        q.points = 0;
+        q.id = id;
+        q.isCorrect = false;
+        lsAnswers.push(q);
 
         wrong[key] = q;
 
+        let corect = this.getCorrectAnswer(q);
         this.setState({
           correctAnswer: "Správná odpověď je " + corect,
           correctAnswerState: "danger",
           wrong,
         });
       }
+
+      reactLocalStorage.setObject("answers", lsAnswers);
 
       setTimeout(
         () =>
@@ -181,6 +210,28 @@ export default class Quiz extends React.Component {
 
       this.setState((state) => ({ ...state, questions: usedQuestions }));
     }
+  }
+
+  notFixed(obj) {
+    return obj.fixed === undefined;
+  }
+
+  generateQuestionsFromWrong() {
+    let usedQuestions = this.state.questions;
+
+    let lsWrong = reactLocalStorage.getObject("answers", []);
+    lsWrong = linq
+      .from(lsWrong)
+      .where(function (x) {
+        return x.isCorrect === false || x.isFixed === false;
+      })
+      .shuffle()
+      .toArray();
+
+    for (let index = 0; index < 10; index++) {
+      usedQuestions[index] = lsWrong[index];
+    }
+    this.setState((state) => ({ ...state, questions: usedQuestions }));
   }
 
   renderQuestion() {
@@ -358,8 +409,8 @@ export default class Quiz extends React.Component {
       "Ještě to chce zlepšit.",
       "Trénink dělá mistra.",
       "Nevěš hlavu a trénuj.",
-      "Zkusto znovu a lépe.",
-      "Zkusto znovu a lépe.",
+      "Zkus to znova a lépe.",
+      "Zkus to znova a lépe.",
       "Tak to se nepovedlo.",
       "Trénuj, trénuj, trénuj!",
     ];

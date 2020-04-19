@@ -87,12 +87,37 @@ export default class Start extends React.Component {
               <button type="submit" className="btn">
                 <img
                   src={process.env.PUBLIC_URL + "/ic-next-white.svg"}
-                  alt="Počítáš na jedničku"
+                  alt="start"
                 />{" "}
                 Začít počítat
               </button>
             </div>
           </div>
+          {this.props.wrong >= 10 ? (
+            <>
+              <hr className="m-top" />
+              <div className="row align-items-center">
+                <div className="col-6 light-text">
+                  {this.props.wrong} chyb
+                  <br />
+                  {this.props.fixed} opraveno
+                </div>
+                <div className="col-6 text-right">
+                  <button
+                    type="button"
+                    onClick={this.props.doublePoints}
+                    className="btn btn-scondary"
+                  >
+                    <img
+                      src={process.env.PUBLIC_URL + "/ic-next.svg"}
+                      alt="start"
+                    />{" "}
+                    Opravit si chyby
+                  </button>
+                </div>
+              </div>
+            </>
+          ) : null}
         </form>
       </div>
     );
