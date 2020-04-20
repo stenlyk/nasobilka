@@ -1,6 +1,27 @@
 import React from "react";
 
-export const nums = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
+export const nums = [
+  1,
+  2,
+  3,
+  4,
+  5,
+  6,
+  7,
+  8,
+  9,
+  10,
+  11,
+  12,
+  13,
+  14,
+  15,
+  16,
+  17,
+  18,
+  19,
+  20,
+];
 
 export default class Start extends React.Component {
   constructor(props) {
@@ -53,6 +74,12 @@ export default class Start extends React.Component {
     return (
       <div className="start">
         <form onSubmit={this.props.onSubmit}>
+          <h4>Co chceš trénovat?</h4>
+          <div className="justify-content-between">
+            {Object.keys(this.state.skils).map((key) =>
+              this.renderSkils(this.state.skils[key], key)
+            )}
+          </div>
           <h4>S jakými čísly chceš počítat?</h4>
           <div className="numbers justify-content-between">
             <input
@@ -71,12 +98,6 @@ export default class Start extends React.Component {
               Vše
             </label>
             {this.state.num.map((num) => this.renderNumber(num))}
-          </div>
-          <h4>Co chceš trénovat?</h4>
-          <div className="justify-content-between">
-            {Object.keys(this.state.skils).map((key) =>
-              this.renderSkils(this.state.skils[key], key)
-            )}
           </div>
           <hr />
           <div className="row align-items-center">

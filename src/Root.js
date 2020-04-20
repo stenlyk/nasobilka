@@ -4,7 +4,7 @@ import Quiz from "./Quiz.js";
 import { reactLocalStorage } from "reactjs-localstorage";
 import CircleGraph from "./CircleGraph.js";
 import linq from "linq";
-const version = "0.1";
+const version = "0.2";
 
 export default class Root extends React.Component {
   constructor(props) {

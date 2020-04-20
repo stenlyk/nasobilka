@@ -319,7 +319,6 @@ export default class Quiz extends React.Component {
           type="number"
           name="num"
           min="0"
-          max="10"
           step="1"
           required
           autoFocus

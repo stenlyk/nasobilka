@@ -366,6 +366,15 @@ h5.quizHeader {
     }
   }
 }
+.numbers {
+  flex-wrap: wrap;
+  .checkbox.all {
+    flex-basis: 6%;
+  }
+  .checkbox {
+    flex-basis: 8%;
+  }
+}
 
 .circle-chart__circle {
   animation: circle-chart-fill 2s reverse; /* 1 */
