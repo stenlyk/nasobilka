@@ -1,22 +1,27 @@
 import React from "react";
-import Start, { nums } from "./Start.js";
+import Start, { nums, basicMathNums } from "./Start.js";
 import Quiz from "./Quiz.js";
 import { reactLocalStorage } from "reactjs-localstorage";
 import CircleGraph from "./CircleGraph.js";
 import linq from "linq";
-const version = "0.2";
+const version = "0.3";
 
 export default class Root extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
       selected: {
-        num: [1, 2, 3, 4],
-        skils: { nas: true, del: true },
+        //        num: [1, 2, 3, 4],
+        //        basicMathNum: [],
+        //        skils: { nas: true, del: true, sci: false, odc: false },
+        num: [],
+        basicMathNum: ["0-100"],
+        skils: { nas: false, del: false, sci: true, odc: true },
       },
       submited: false,
       error: "",
       num: nums,
+      basicMathNums,
       levels: {
         20: "green",
         50: "orange",
@@ -43,32 +48,78 @@ export default class Root extends React.Component {
         }
       }
     } else if (name === "all") {
-      console.log(target);
-      console.log(selected.num.length, nums.length);
+      // console.log(target);
+      // console.log(selected.num.length, nums.length);
       if (selected.num.length === nums.length) {
         selected.num = [];
       } else {
         selected.num = nums;
       }
+    } else if (name === "basicMathNum") {
+      if (target.checked) {
+        selected.basicMathNum = [value];
+      }
     } else {
+      if (name === "nas" || name === "del") {
+        selected.skils["sci"] = false;
+        selected.skils["odc"] = false;
+      }
+      if (name === "sci" || name === "odc") {
+        selected.skils["nas"] = false;
+        selected.skils["del"] = false;
+      }
       selected.skils[name] = target.checked;
     }
+
+    if (
+      selected.skils["nas"] === false &&
+      selected.skils["del"] === false &&
+      selected.skils["sci"] === false &&
+      selected.skils["odc"] === false
+    ) {
+      console.log(true);
+      this.setState({
+        error: "Zvol co chceš trénovat. ",
+      });
+    } else {
+      console.log(false);
+      this.setState({
+        error: "",
+      });
+    }
+    console.log(selected.skils);
     this.setState({ selected });
   }
 
   handleSubmit(event) {
     const selected = this.state.selected;
 
-    if (selected.num.length > 0 && (selected.skils.nas || selected.skils.del)) {
-      this.setState({
-        submited: true,
-        error: "",
-        fixWrong: false,
-      });
-    } else {
-      this.setState({
-        error: "Vyber alespoň jedno číslo a zvol násobení nebo dělení.",
-      });
+    if (selected.skils.nas || selected.skils.del) {
+      if (selected.num.length > 0) {
+        this.setState({
+          submited: true,
+          error: "",
+          fixWrong: false,
+        });
+      } else {
+        this.setState({
+          error: "Vyber alespoň jedno číslo a zvol co chceš trénovat. ",
+        });
+      }
+    }
+
+    if (selected.skils.sci || selected.skils.odc) {
+      if (selected.basicMathNum.length > 0) {
+        this.setState({
+          submited: true,
+          error: "",
+          fixWrong: false,
+        });
+      } else {
+        this.setState({
+          error: "Vyber alespoň jedno číslo a zvol co chceš trénovat.",
+        });
+      }
     }
 
     event.preventDefault();
@@ -113,6 +164,23 @@ export default class Root extends React.Component {
         reactLocalStorage.setObject("answers", newArray);
         reactLocalStorage.remove("correct");
         reactLocalStorage.remove("wrong");
+      } else if (localVersion === "0.1") {
+        const a = reactLocalStorage.getObject("answers", []);
+        let answers = linq
+          .from(a)
+          .where(function (x) {
+            return x.statsKey === undefined;
+          })
+          .toArray();
+
+        for (let index = 0; index < answers.length; index++) {
+          let q = answers[index];
+          q.statsKey = q.num2;
+          answers[index] = q;
+        }
+
+        reactLocalStorage.setObject("answers", answers);
+        reactLocalStorage.set("version", version);
       }
     }
   }
@@ -192,9 +260,7 @@ export default class Root extends React.Component {
   renderQuiz() {
     return (
       <Quiz
-        num={this.state.selected.num}
-        nas={this.state.selected.skils.nas}
-        del={this.state.selected.skils.del}
+        selected={this.state.selected}
         fixWrong={this.state.fixWrong}
         leave={(e) => this.leave(e)}
       />
@@ -221,8 +287,14 @@ export default class Root extends React.Component {
     // console.log(stats);
     const tab = this.state.tab;
     let data = stats.nas;
-    if (this.state.tab !== "nas") {
+    if (this.state.tab === "del") {
       data = stats.del;
+    }
+    if (this.state.tab === "sci") {
+      data = stats.sci;
+    }
+    if (this.state.tab === "odc") {
+      data = stats.odc;
     }
 
     const num = this.state.num;
@@ -233,6 +305,24 @@ export default class Root extends React.Component {
     return (
       <>
         <div className="radio-bar">
+          <input
+            type="radio"
+            name="tab"
+            value="sci"
+            id="sci"
+            checked={tab === "sci" ? true : false}
+            onChange={(e) => this.switchTab(e)}
+          />
+          <label htmlFor="sci">Sčítání</label>
+          <input
+            type="radio"
+            name="tab"
+            value="odc"
+            id="odc"
+            checked={tab === "odc" ? true : false}
+            onChange={(e) => this.switchTab(e)}
+          />
+          <label htmlFor="odc">Odčítání</label>
           <input
             type="radio"
             name="tab"
@@ -255,28 +345,58 @@ export default class Root extends React.Component {
         <div className="row">
           <div className="col">
             <div className="justify-content-between flex-wrap">
-              {num.map((i) => {
-                level = this.getLevel(data[i]["correct"]);
-                percent = (data[i]["correct"] / level[1]) * 100;
-                return (
-                  <div
-                    className="graph"
-                    key={i}
-                    title={data[i]["correct"] + "/" + level[1]}
-                  >
-                    <CircleGraph percent={percent} label={i} />
-                    <img
-                      src={
-                        process.env.PUBLIC_URL +
-                        "/ic-" +
-                        level[0] +
-                        "-badge.svg"
-                      }
-                      alt={level[0]}
-                    />
-                  </div>
-                );
-              })}
+              {tab === "nas" || tab === "del" ? (
+                <>
+                  {num.map((i) => {
+                    level = this.getLevel(data[i]["correct"]);
+                    percent = (data[i]["correct"] / level[1]) * 100;
+                    return (
+                      <div
+                        className="graph"
+                        key={i}
+                        title={data[i]["correct"] + "/" + level[1]}
+                      >
+                        <CircleGraph percent={percent} label={i} />
+                        <img
+                          src={
+                            process.env.PUBLIC_URL +
+                            "/ic-" +
+                            level[0] +
+                            "-badge.svg"
+                          }
+                          alt={level[0]}
+                        />
+                      </div>
+                    );
+                  })}
+                </>
+              ) : (
+                <>
+                  {basicMathNums.map((i) => {
+                    level = this.getLevel(data[i]["correct"]);
+                    percent = (data[i]["correct"] / level[1]) * 100;
+                    let label = i.split("-");
+                    return (
+                      <div
+                        className="graph"
+                        key={i}
+                        title={data[i]["correct"] + "/" + level[1]}
+                      >
+                        <CircleGraph percent={percent} label={label[1]} />
+                        <img
+                          src={
+                            process.env.PUBLIC_URL +
+                            "/ic-" +
+                            level[0] +
+                            "-badge.svg"
+                          }
+                          alt={level[0]}
+                        />
+                      </div>
+                    );
+                  })}
+                </>
+              )}
             </div>
           </div>
         </div>
@@ -286,8 +406,9 @@ export default class Root extends React.Component {
 
   renderStats() {
     const num = this.state.num;
+    const basicMathNums = this.state.basicMathNums;
     let answers = reactLocalStorage.getObject("answers", []);
-
+    // console.log(answers);
     // const dataStreak = linq.from(answers).select("$.isCorrect").toArray();
     // let streak = this.streak(dataStreak);
     // console.log(dataStreak, streak);
@@ -298,16 +419,18 @@ export default class Root extends React.Component {
         return x.isCorrect === true || x.isFixed === true;
       })
       .groupBy(
-        "{method: $.method, num2: $.num2}",
+        "{method: $.method, statsKey: $.statsKey}",
         null,
-        "{ method: $.method, num2: $.num2, points: $$.sum('parseInt($.points)') }",
-        "$.method + $.num2"
+        "{ method: $.method, statsKey: $.statsKey, points: $$.sum('parseInt($.points)') }",
+        "$.method + $.statsKey"
       )
       .toArray();
 
     let stats = {
       nas: {},
       del: {},
+      sci: {},
+      odc: {},
     };
 
     num.map((val) => {
@@ -316,7 +439,15 @@ export default class Root extends React.Component {
       return null;
     });
 
-    data.map((elm) => (stats[elm.method][elm.num2]["correct"] = elm.points));
+    basicMathNums.map((val) => {
+      stats["sci"][val] = { correct: 0, wrong: 0 };
+      stats["odc"][val] = { correct: 0, wrong: 0 };
+      return null;
+    });
+    // console.log(data);
+    data.map(
+      (elm) => (stats[elm.method][elm.statsKey]["correct"] = elm.points)
+    );
 
     return (
       <>

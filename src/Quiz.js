@@ -130,8 +130,9 @@ export default class Quiz extends React.Component {
   }
 
   getCorrectAnswer(question) {
-    if (question.method === "nas" && question.side === "right") {
-      return question.num1 * question.num2;
+    if (question.side === "right") {
+      if (question.method === "nas") return question.num1 * question.num2;
+      if (question.method === "sci") return question.num1 + question.num2;
     }
     if (question.first) {
       return question.num2;
@@ -166,12 +167,19 @@ export default class Quiz extends React.Component {
     }
   }
 
+  randomIntFromInterval(min, max) {
+    // min and max included
+    return Math.floor(Math.random() * (max - min + 1) + min);
+  }
+
   generateQuestion() {
-    const num = this.props.num;
-    const nas = this.props.nas;
-    const del = this.props.del;
+    const num = this.props.selected.num;
+    const basicMathNum = this.props.selected.basicMathNum[0];
+    const skils = this.props.selected.skils;
+
     const sides = ["left", "right"];
     const methods = ["nas", "del"];
+    const methodsBasic = ["sci", "odc"];
     let usedQuestions = this.state.questions;
 
     let num1 = 1;
@@ -179,21 +187,84 @@ export default class Quiz extends React.Component {
     let side = "left";
     let method = "nas";
     let first = true;
+    let statsKey = false;
 
     if (Object.keys(usedQuestions).length < 10) {
-      num1 = Math.floor(Math.random() * 11);
-      num2 = num[Math.floor(Math.random() * num.length)];
-      side = sides[Math.floor(Math.random() * sides.length)];
-      first = Math.floor(Math.random() * 1000) % 2 === 0 ? true : false;
-      method = nas ? "nas" : "del";
+      if (skils.nas === true || skils.del === true) {
+        num1 = Math.floor(Math.random() * 11);
+        num2 = num[Math.floor(Math.random() * num.length)];
+        side = sides[Math.floor(Math.random() * sides.length)];
+        first = Math.floor(Math.random() * 1000) % 2 === 0 ? true : false;
+        method = skils.nas ? "nas" : "del";
 
-      if (nas && del) {
-        method = methods[Math.floor(Math.random() * methods.length)];
+        if (skils.nas === true && skils.del === true) {
+          method = methods[Math.floor(Math.random() * methods.length)];
+        }
+
+        if (num1 === 0) {
+          side = "right";
+          first = false;
+        }
+        statsKey = num2;
       }
 
-      if (num1 === 0) {
-        side = "right";
-        first = false;
+      if (skils.sci === true || skils.odc === true) {
+        let minMax = basicMathNum.split("-");
+
+        num1 = this.randomIntFromInterval(minMax[0], minMax[1]);
+        num2 = this.randomIntFromInterval(minMax[0], minMax[1]);
+
+        side = sides[Math.floor(Math.random() * sides.length)];
+        first = Math.floor(Math.random() * 1000) % 2 === 0 ? true : false;
+        method = skils.sci ? "sci" : "oci";
+
+        if (skils.sci === true && skils.odc === true) {
+          method =
+            methodsBasic[Math.floor(Math.random() * methodsBasic.length)];
+        }
+
+        if (method === "odc" && num1 < num2) {
+          let origNum1 = num1;
+          num1 = num2;
+          num2 = origNum1;
+        }
+
+        if (method === "odc" && num1 + num2 > minMax[1]) {
+          if (num1 > num2) {
+            num1 = Math.floor(num1 / 2);
+          } else {
+            num2 = Math.floor(num2 / 2);
+          }
+          if (num1 + num2 > minMax[1]) {
+            if (num1 > num2) {
+              num1 = Math.floor(num1 / 2);
+            } else {
+              num2 = Math.floor(num2 / 2);
+            }
+          }
+        }
+
+        if (method === "sci" && num1 + num2 > minMax[1]) {
+          if (num1 > num2) {
+            num1 = Math.floor(num1 / 2);
+          } else {
+            num2 = Math.floor(num2 / 2);
+          }
+          if (num1 + num2 > minMax[1]) {
+            if (num1 > num2) {
+              num1 = Math.floor(num1 / 2);
+            } else {
+              num2 = Math.floor(num2 / 2);
+            }
+          }
+        }
+
+        if (num1 === 0) {
+          side = "right";
+          first = false;
+        }
+        console.log(num1, num2, minMax[1]);
+        statsKey = basicMathNum;
       }
 
       const key = method + "|" + side + "|" + first + "|" + num1 + "|" + num2;
@@ -206,9 +277,13 @@ export default class Quiz extends React.Component {
         method,
         side,
         first,
+        statsKey,
       };
 
-      this.setState((state) => ({ ...state, questions: usedQuestions }));
+      this.setState((state) => ({
+        ...state,
+        questions: usedQuestions,
+      }));
     }
   }
 
@@ -231,7 +306,10 @@ export default class Quiz extends React.Component {
     for (let index = 0; index < 10; index++) {
       usedQuestions[index] = lsWrong[index];
     }
-    this.setState((state) => ({ ...state, questions: usedQuestions }));
+    this.setState((state) => ({
+      ...state,
+      questions: usedQuestions,
+    }));
   }
 
   renderQuestion() {
@@ -251,9 +329,7 @@ export default class Quiz extends React.Component {
       <>
         <div className="row question justify-content-center align-items-center">
           <div className="col">
-            {method === "nas"
-              ? this.renderMultiplication(num1, num2, side, first)
-              : this.renderDivade(num1, num2, side, first)}
+            {this.renderMethod(method, num1, num2, side, first)}
           </div>
         </div>
         {submited ? (
@@ -270,6 +346,21 @@ export default class Quiz extends React.Component {
         </div>
       </>
     );
+  }
+
+  renderMethod(method, num1, num2, side, first) {
+    switch (method) {
+      case "nas":
+        return this.renderMultiplication(num1, num2, side, first);
+      case "del":
+        return this.renderDivade(num1, num2, side, first);
+      case "sci":
+        return this.renderSummation(num1, num2, side, first);
+      case "odc":
+        return this.renderSubtraction(num1, num2, side, first);
+      default:
+        break;
+    }
   }
 
   renderMultiplication(num1, num2, side, first) {
@@ -345,6 +436,93 @@ export default class Quiz extends React.Component {
     );
   }
 
+  renderSummation(num1, num2, side, first) {
+    const key = "sci|" + side + "|" + first + "|" + num1 + "|" + num2;
+    return side === "left" ? (
+      <h2 className={num1 > 999 || num2 > 999 ? "smallNumber" : null}>
+        {first ? num1 : num2} <span className="mul">+</span>{" "}
+        <input
+          key={key}
+          type="number"
+          name="num"
+          min="0"
+          step="1"
+          required
+          autoFocus
+          onChange={(e) => this.handleChange(e)}
+        />{" "}
+        <span>=</span>
+        {num1 + num2}
+      </h2>
+    ) : (
+      <h2 className={num1 > 999 || num2 > 999 ? "smallNumber" : null}>
+        {num1} <span className="mul">+</span> {num2} <span>=</span>{" "}
+        <input
+          key={key}
+          type="number"
+          name="num"
+          min="0"
+          step="1"
+          required
+          autoFocus
+          onChange={(e) => this.handleChange(e)}
+        />
+      </h2>
+    );
+  }
+
+  renderSubtraction(num1, num2, side, first) {
+    const key = "odc|" + side + "|" + first + "|" + num1 + "|" + num2;
+    const total = num1 + num2;
+    return side === "left" ? (
+      <h2 className={num1 > 999 || num2 > 999 ? "smallNumber" : null}>
+        {total} <span className="div">-</span>{" "}
+        <input
+          key={key}
+          type="number"
+          name="num"
+          min="0"
+          step="1"
+          required
+          autoFocus
+          onChange={(e) => this.handleChange(e)}
+        />{" "}
+        <span>=</span>
+        {first ? num1 : num2}
+      </h2>
+    ) : (
+      <h2 className={num1 > 999 || num2 > 999 ? "smallNumber" : null}>
+        {total} <span className="div">-</span> {first ? num1 : num2}{" "}
+        <span>=</span>{" "}
+        <input
+          key={key}
+          type="number"
+          name="num"
+          min="0"
+          step="1"
+          required
+          autoFocus
+          onChange={(e) => this.handleChange(e)}
+        />
+      </h2>
+    );
+  }
+
+  renderViewMethod(method, num1, num2, side, first) {
+    switch (method) {
+      case "nas":
+        return this.renderViewMultiplication(num1, num2, side, first);
+      case "del":
+        return this.renderViewDivade(num1, num2, side, first);
+      case "sci":
+        return this.renderViewSummation(num1, num2, side, first);
+      case "odc":
+        return this.renderViewSubtraction(num1, num2, side, first);
+      default:
+        break;
+    }
+  }
+
   renderViewMultiplication(num1, num2, side, first) {
     const total = num1 * num2;
     const key = "nas|" + side + "|" + first + "|" + num1 + "|" + num2;
@@ -377,17 +555,50 @@ export default class Quiz extends React.Component {
     );
   }
 
+  renderViewSummation(num1, num2, side, first) {
+    const key = "sci|" + side + "|" + first + "|" + num1 + "|" + num2;
+    const total = num1 + num2;
+    return side === "left" ? (
+      <h3 key={key} className={num1 > 999 || num2 > 999 ? "smallNumber" : null}>
+        {first ? num1 : num2} <span className="mul">+</span>{" "}
+        <strong className="bg-danger">{first ? num2 : num1}</strong>
+        <span>=</span>
+        {num1 + num2}
+      </h3>
+    ) : (
+      <h3 key={key} className={num1 > 999 || num2 > 999 ? "smallNumber" : null}>
+        {num1} <span className="mul">+</span> {num2} <span>=</span>{" "}
+        <strong className="bg-danger">{total}</strong>
+      </h3>
+    );
+  }
+
+  renderViewSubtraction(num1, num2, side, first) {
+    const key = "odc|" + side + "|" + first + "|" + num1 + "|" + num2;
+    const total = num1 + num2;
+    return side === "left" ? (
+      <h3 key={key} className={num1 > 999 || num2 > 999 ? "smallNumber" : null}>
+        {total} <span className="div">-</span>{" "}
+        <strong className="bg-danger">{first ? num2 : num1}</strong>{" "}
+        <span>=</span>
+        {first ? num1 : num2}
+      </h3>
+    ) : (
+      <h3 className={num1 > 999 || num2 > 999 ? "smallNumber" : null}>
+        {total} <span className="div">-</span> {first ? num1 : num2}{" "}
+        <span>=</span>{" "}
+        <strong className="bg-danger">{first ? num2 : num1}</strong>
+      </h3>
+    );
+  }
+
   renderWrong(wrong) {
     const items = Object.keys(wrong);
     return items.map((key) => {
       const w = wrong[key];
-      return w.method === "nas" ? (
+      return (
         <div className="col-6" key={key}>
-          {this.renderViewMultiplication(w.num1, w.num2, w.side, w.first)}
-        </div>
-      ) : (
-        <div className="col-6" key={key}>
-          {this.renderViewDivade(w.num1, w.num2, w.side, w.first)}
+          {this.renderViewMethod(w.method, w.num1, w.num2, w.side, w.first)}
         </div>
       );
     });

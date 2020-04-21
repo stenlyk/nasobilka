@@ -323,9 +323,9 @@ a {
     }
     h3 {
       font-size: 18px;
-      padding: 6px 20px;
+      padding: 10px 6px;
       .bg-danger {
-        padding: 4px;
+        padding: 0 4px;
         border-radius: 4px;
       }
     }
@@ -373,6 +373,13 @@ h5.quizHeader {
   }
   .checkbox {
     flex-basis: 8%;
+  }
+}
+
+h2.smallNumber {
+  font-size: 32px;
+  input {
+    font-size: 28px;
   }
 }
 
@@ -489,5 +496,13 @@ h5.quizHeader {
   .container {
     padding-right: 5px;
     padding-left: 5px;
+  }
+  .quiz {
+    .resume {
+      h3.smallNumber {
+        font-size: 16px;
+        padding: 10px 0;
+      }
+    }
   }
 }

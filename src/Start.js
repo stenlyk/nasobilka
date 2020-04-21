@@ -23,12 +23,20 @@ export const nums = [
   20,
 ];
 
+export const basicMathNums = ["0-10", "0-20", "0-100", "100-999", "1000-9999"];
+
 export default class Start extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
       num: nums,
-      skils: { nas: "Násobení", del: "Dělení" },
+      basicMathNums,
+      skils: {
+        sci: "Sčítání",
+        odc: "Odčítání",
+        nas: "Násobení",
+        del: "Dělení",
+      },
     };
   }
 
@@ -46,6 +54,26 @@ export default class Start extends React.Component {
         />
         <label className="checkbox" htmlFor={"input" + num}>
           {num}
+        </label>
+      </React.Fragment>
+    );
+  }
+
+  renderNumberRange(num) {
+    const checked = this.props.selected.basicMathNum.indexOf(num);
+    const label = num.split("-");
+    return (
+      <React.Fragment key={num}>
+        <input
+          type="radio"
+          name="basicMathNum"
+          value={num}
+          checked={checked !== -1 ? true : false}
+          id={"basicMathNum" + num}
+          onChange={this.props.onChange}
+        />
+        <label className="checkbox" htmlFor={"basicMathNum" + num}>
+          {label[1] < 100 ? "do " + label[1] : label[1]}
         </label>
       </React.Fragment>
     );
@@ -80,25 +108,41 @@ export default class Start extends React.Component {
               this.renderSkils(this.state.skils[key], key)
             )}
           </div>
-          <h4>S jakými čísly chceš počítat?</h4>
-          <div className="numbers justify-content-between">
-            <input
-              type="checkbox"
-              value={true}
-              name="all"
-              checked={
-                this.props.selected.num.length === this.state.num.length
-                  ? true
-                  : false
-              }
-              onChange={this.props.onChange}
-              id="inputAll"
-            />
-            <label className="checkbox all" htmlFor={"inputAll"}>
-              Vše
-            </label>
-            {this.state.num.map((num) => this.renderNumber(num))}
-          </div>
+          {this.props.selected.skils["nas"] === true ||
+          this.props.selected.skils["del"] === true ? (
+            <>
+              <h4>S jakými čísly chceš trénovat násobení a dělení?</h4>
+              <div className="numbers justify-content-between">
+                <input
+                  type="checkbox"
+                  value={true}
+                  name="all"
+                  checked={
+                    this.props.selected.num.length === this.state.num.length
+                      ? true
+                      : false
+                  }
+                  onChange={this.props.onChange}
+                  id="inputAll"
+                />
+                <label className="checkbox all" htmlFor={"inputAll"}>
+                  Vše
+                </label>
+                {this.state.num.map((num) => this.renderNumber(num))}
+              </div>
+            </>
+          ) : null}
+          {this.props.selected.skils["sci"] === true ||
+          this.props.selected.skils["odc"] === true ? (
+            <>
+              <h4>S jakými čísly chceš trénovat sčítání a odčítání?</h4>
+              <div className="basicMathNums justify-content-between">
+                {this.state.basicMathNums.map((num) =>
+                  this.renderNumberRange(num)
+                )}
+              </div>
+            </>
+          ) : null}
           <hr />
           <div className="row align-items-center">
             <div className="col light-text">
