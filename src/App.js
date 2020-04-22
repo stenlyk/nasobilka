@@ -1,4 +1,5 @@
 import React from "react";
+import ErrorBoundary from "./ErrorBoundary";
 import Root from "./Root.js";
 
 function App() {
@@ -13,7 +14,9 @@ function App() {
           />
         </div>
       </div>
-      <Root />
+      <ErrorBoundary>
+        <Root />
+      </ErrorBoundary>
     </div>
   );
 }

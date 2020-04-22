@@ -4,7 +4,7 @@ import Quiz from "./Quiz.js";
 import { reactLocalStorage } from "reactjs-localstorage";
 import CircleGraph from "./CircleGraph.js";
 import linq from "linq";
-const version = "0.3";
+const version = "0.4";
 
 export default class Root extends React.Component {
   constructor(props) {
@@ -31,104 +31,13 @@ export default class Root extends React.Component {
       tab: "nas",
       fixWrong: false,
     };
+    this.runUpdateScript();
   }
 
-  handleChange(event) {
-    const target = event.target;
-    const value = target.value;
-    const name = target.name;
-    let selected = this.state.selected;
-    if (name === "num") {
-      if (target.checked) {
-        selected.num.push(Number(value));
-      } else {
-        var index = selected.num.indexOf(Number(target.value));
-        if (index !== -1) {
-          selected.num.splice(index, 1);
-        }
-      }
-    } else if (name === "all") {
-      // console.log(target);
-      // console.log(selected.num.length, nums.length);
-      if (selected.num.length === nums.length) {
-        selected.num = [];
-      } else {
-        selected.num = nums;
-      }
-    } else if (name === "basicMathNum") {
-      if (target.checked) {
-        selected.basicMathNum = [value];
-      }
-    } else {
-      if (name === "nas" || name === "del") {
-        selected.skils["sci"] = false;
-        selected.skils["odc"] = false;
-      }
-      if (name === "sci" || name === "odc") {
-        selected.skils["nas"] = false;
-        selected.skils["del"] = false;
-      }
-      selected.skils[name] = target.checked;
-    }
-
-    if (
-      selected.skils["nas"] === false &&
-      selected.skils["del"] === false &&
-      selected.skils["sci"] === false &&
-      selected.skils["odc"] === false
-    ) {
-      console.log(true);
-      this.setState({
-        error: "Zvol co chceš trénovat. ",
-      });
-    } else {
-      console.log(false);
-      this.setState({
-        error: "",
-      });
-    }
-    console.log(selected.skils);
-    this.setState({ selected });
-  }
-
-  handleSubmit(event) {
-    const selected = this.state.selected;
-
-    if (selected.skils.nas || selected.skils.del) {
-      if (selected.num.length > 0) {
-        this.setState({
-          submited: true,
-          error: "",
-          fixWrong: false,
-        });
-      } else {
-        this.setState({
-          error: "Vyber alespoň jedno číslo a zvol co chceš trénovat. ",
-        });
-      }
-    }
-
-    if (selected.skils.sci || selected.skils.odc) {
-      if (selected.basicMathNum.length > 0) {
-        this.setState({
-          submited: true,
-          error: "",
-          fixWrong: false,
-        });
-      } else {
-        this.setState({
-          error: "Vyber alespoň jedno číslo a zvol co chceš trénovat.",
-        });
-      }
-    }
-
-    event.preventDefault();
-  }
-
-  componentDidMount() {
+  runUpdateScript() {
     let localVersion = reactLocalStorage.get("version", "0");
     if (localVersion !== version) {
-      if (localVersion === "0") {
+      /* if (localVersion === "0") {
         let lsCorrect = reactLocalStorage.getObject("correct", []);
         let lsWrong = reactLocalStorage.getObject("wrong", []);
         reactLocalStorage.setObject("_correct", lsCorrect);
@@ -181,8 +90,115 @@ export default class Root extends React.Component {
 
         reactLocalStorage.setObject("answers", answers);
         reactLocalStorage.set("version", version);
+      } */
+      if (
+        localVersion === "0.3" ||
+        localVersion === "0.2" ||
+        localVersion === "0.1"
+      ) {
+        let answers = reactLocalStorage.getObject("answers", []);
+
+        for (let index = 0; index < answers.length; index++) {
+          let q = answers[index];
+          //console.log(q.statsKey);
+          if (!q.statsKey) {
+            q.statsKey = q.num2;
+          }
+          answers[index] = q;
+        }
+        reactLocalStorage.setObject("answers", answers);
       }
     }
+    reactLocalStorage.set("version", version);
+  }
+
+  handleChange(event) {
+    const target = event.target;
+    const value = target.value;
+    const name = target.name;
+    let selected = this.state.selected;
+    if (name === "num") {
+      if (target.checked) {
+        selected.num.push(Number(value));
+      } else {
+        var index = selected.num.indexOf(Number(target.value));
+        if (index !== -1) {
+          selected.num.splice(index, 1);
+        }
+      }
+    } else if (name === "all") {
+      // console.log(target);
+      // console.log(selected.num.length, nums.length);
+      if (selected.num.length === nums.length) {
+        selected.num = [];
+      } else {
+        selected.num = nums;
+      }
+    } else if (name === "basicMathNum") {
+      if (target.checked) {
+        selected.basicMathNum = [value];
+      }
+    } else {
+      if (name === "nas" || name === "del") {
+        selected.skils["sci"] = false;
+        selected.skils["odc"] = false;
+      }
+      if (name === "sci" || name === "odc") {
+        selected.skils["nas"] = false;
+        selected.skils["del"] = false;
+      }
+      selected.skils[name] = target.checked;
+    }
+
+    if (
+      selected.skils["nas"] === false &&
+      selected.skils["del"] === false &&
+      selected.skils["sci"] === false &&
+      selected.skils["odc"] === false
+    ) {
+      this.setState({
+        error: "Zvol co chceš trénovat.",
+      });
+    } else {
+      this.setState({
+        error: "",
+      });
+    }
+    this.setState({ selected });
+  }
+
+  handleSubmit(event) {
+    const selected = this.state.selected;
+
+    if (selected.skils.nas || selected.skils.del) {
+      if (selected.num.length > 0) {
+        this.setState({
+          submited: true,
+          error: "",
+          fixWrong: false,
+        });
+      } else {
+        this.setState({
+          error: "Vyber alespoň jedno číslo a zvol co chceš trénovat. ",
+        });
+      }
+    }
+
+    if (selected.skils.sci || selected.skils.odc) {
+      if (selected.basicMathNum.length > 0) {
+        this.setState({
+          submited: true,
+          error: "",
+          fixWrong: false,
+        });
+      } else {
+        this.setState({
+          error: "Vyber alespoň jedno číslo a zvol co chceš trénovat.",
+        });
+      }
+    }
+
+    event.preventDefault();
   }
 
   doublePoints(event) {

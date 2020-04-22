@@ -70,14 +70,6 @@ export default class Quiz extends React.Component {
               ? { ...a, isFixed: true, points: 1 }
               : a;
           });
-
-          let test = linq
-            .from(lsAnswers)
-            .where(function (x) {
-              return x.isFixed === true;
-            })
-            .toArray();
-          console.log(test);
         }
 
         q.points = 1;
@@ -263,7 +255,7 @@ export default class Quiz extends React.Component {
           side = "right";
           first = false;
         }
-        console.log(num1, num2, minMax[1]);
+        // console.log(num1, num2, minMax[1]);
         statsKey = basicMathNum;
       }
 
