@@ -4,7 +4,7 @@ import Quiz from "./Quiz.js";
 import { reactLocalStorage } from "reactjs-localstorage";
 import CircleGraph from "./CircleGraph.js";
 import linq from "linq";
-const version = "0.4";
+export const version = "0.4.1";
 
 export default class Root extends React.Component {
   constructor(props) {
@@ -509,35 +509,36 @@ export default class Root extends React.Component {
     return (
       <>
         {!submited ? (
-          <div className="container">
-            <div className="row">
-              <div className="col-lg-6 col-sm-12">
-                <div className="box">
-                  {error !== "" ? (
-                    <div className="alert alert-danger">{error}</div>
-                  ) : (
-                    ""
-                  )}
-                  {this.renderStart()}
+          <div className="row">
+            <div className="col-lg-6 col-sm-12">
+              <div className="box">
+                {error !== "" ? (
+                  <div className="alert alert-danger">{error}</div>
+                ) : (
+                  ""
+                )}
+                {this.renderStart()}
+              </div>
+              <div className="row copy">
+                <div className="col-6">
+                  Made with{" "}
+                  <span role="img" aria-label="love">
+                    ❤️
+                  </span>{" "}
+                  by{" "}
+                  <a href="https://www.facebook.com/stanislav.kurinec">
+                    Standa
+                  </a>
                 </div>
-                <div className="row copy">
-                  <div className="col-6">
-                    Made with{" "}
-                    <span role="img" aria-label="love">
-                      ❤️
-                    </span>{" "}
-                    by Standa
-                  </div>
-                  <div className="col-6">
-                    Designed by <a href="https://zarzicky.cz">Lukáš</a>
-                  </div>
+                <div className="col-6">
+                  Designed by <a href="https://zarzicky.cz">Lukáš</a>
                 </div>
               </div>
-              <div className="col-lg-6 col-sm-12">
-                <div className="box">
-                  <h4>Tvoje výsledky</h4>
-                  {this.renderStats()}
-                </div>
+            </div>
+            <div className="col-lg-6 col-sm-12">
+              <div className="box">
+                <h4>Tvoje výsledky</h4>
+                {this.renderStats()}
               </div>
             </div>
           </div>

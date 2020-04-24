@@ -1,6 +1,11 @@
 import React from "react";
 import ErrorBoundary from "./ErrorBoundary";
-import Root from "./Root.js";
+import Root, { version } from "./Root.js";
+import LogRocket from "logrocket";
+import setupLogRocketReact from "logrocket-react";
+
+LogRocket.init("pocitejsamcz/pocitejsamcz");
+setupLogRocketReact(LogRocket);
 
 function App() {
   return (
@@ -17,6 +22,14 @@ function App() {
       <ErrorBoundary>
         <Root />
       </ErrorBoundary>
+      <div className="footer row">
+        <div className="col">
+          <a href="https://github.com/stenlyk/nasobilka/issues" taget="_blank">
+            Našel jsi chybu?
+          </a>
+        </div>
+        <div className="col text-right">ver {version}</div>
+      </div>
     </div>
   );
 }

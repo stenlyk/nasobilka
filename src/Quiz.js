@@ -208,7 +208,7 @@ export default class Quiz extends React.Component {
 
         side = sides[Math.floor(Math.random() * sides.length)];
         first = Math.floor(Math.random() * 1000) % 2 === 0 ? true : false;
-        method = skils.sci ? "sci" : "oci";
+        method = skils.sci ? "sci" : "odc";
 
         if (skils.sci === true && skils.odc === true) {
           method =
@@ -365,7 +365,6 @@ export default class Quiz extends React.Component {
           type="number"
           name="num"
           min="0"
-          max="10"
           step="1"
           required
           autoFocus
@@ -465,6 +464,7 @@ export default class Quiz extends React.Component {
 
   renderSubtraction(num1, num2, side, first) {
     const key = "odc|" + side + "|" + first + "|" + num1 + "|" + num2;
+    console.log(key);
     const total = num1 + num2;
     return side === "left" ? (
       <h2 className={num1 > 999 || num2 > 999 ? "smallNumber" : null}>
