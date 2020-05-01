@@ -202,15 +202,28 @@ a {
     align-items: center;
     justify-content: center;
     display: flex;
-    input {
-      width: 100px;
-      height: 66px;
-      border-radius: 4px;
-      border: solid 2px #e4e7e7;
-      background-color: #ffffff;
-      font-size: 40px;
-      font-weight: 500;
-      padding: 0 8px;
+  }
+  input {
+    width: 100px;
+    height: 66px;
+    border-radius: 4px;
+    border: solid 2px #e4e7e7;
+    background-color: #ffffff;
+    font-size: 40px;
+    font-weight: 500;
+    padding: 0 8px;
+  }
+  table {
+    margin: 0 auto;
+    .small {
+      h3 {
+        display: flex;
+        justify-content: flex-end;
+        font-size: 30px;
+      }
+      input {
+        height: 56px;
+      }
     }
   }
 }

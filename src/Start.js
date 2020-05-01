@@ -37,6 +37,10 @@ export default class Start extends React.Component {
         nas: "Násobení",
         del: "Dělení",
       },
+      delMode: {
+        normal: "Dělení bez zbytku",
+        modulo: "Dělení se zbytkem",
+      },
     };
   }
 
@@ -98,6 +102,25 @@ export default class Start extends React.Component {
     );
   }
 
+  renderDividingOptions(val, key) {
+    // console.log(this.props.selected.skils[key] === true);
+    return (
+      <React.Fragment key={key}>
+        <input
+          type="checkbox"
+          name={key}
+          value={true}
+          checked={this.props.selected.delMode === key ? true : false}
+          id={"input" + key}
+          onChange={this.props.onChange}
+        />
+        <label className="checkbox" htmlFor={"input" + key}>
+          {val}
+        </label>
+      </React.Fragment>
+    );
+  }
+
   render() {
     return (
       <div className="start">
@@ -108,6 +131,13 @@ export default class Start extends React.Component {
               this.renderSkils(this.state.skils[key], key)
             )}
           </div>
+          {this.props.selected.skils["del"] === true ? (
+            <div className="justify-content-between">
+              {Object.keys(this.state.delMode).map((key) =>
+                this.renderDividingOptions(this.state.delMode[key], key)
+              )}
+            </div>
+          ) : null}
           {this.props.selected.skils["nas"] === true ||
           this.props.selected.skils["del"] === true ? (
             <>

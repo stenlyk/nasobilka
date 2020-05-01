@@ -4,7 +4,7 @@ import Quiz from "./Quiz.js";
 import { reactLocalStorage } from "reactjs-localstorage";
 import CircleGraph from "./CircleGraph.js";
 import linq from "linq";
-export const version = "0.4.1";
+export const version = "0.5";
 
 export default class Root extends React.Component {
   constructor(props) {
@@ -17,6 +17,7 @@ export default class Root extends React.Component {
         num: [],
         basicMathNum: ["0-100"],
         skils: { nas: false, del: false, sci: true, odc: true },
+        delMode: "normal",
       },
       submited: false,
       error: "",
@@ -34,63 +35,16 @@ export default class Root extends React.Component {
     this.runUpdateScript();
   }
 
+  componentDidMount() {
+    const selected = reactLocalStorage.getObject("selected", {});
+    if (selected.skils) {
+      this.setState({ selected });
+    }
+  }
+
   runUpdateScript() {
     let localVersion = reactLocalStorage.get("version", "0");
     if (localVersion !== version) {
-      /* if (localVersion === "0") {
-        let lsCorrect = reactLocalStorage.getObject("correct", []);
-        let lsWrong = reactLocalStorage.getObject("wrong", []);
-        reactLocalStorage.setObject("_correct", lsCorrect);
-        reactLocalStorage.setObject("_wrong", lsWrong);
-
-        for (let index = 0; index < lsCorrect.length; index++) {
-          let q = lsCorrect[index];
-          q.isCorrect = true;
-          q.points = 1;
-          q.id = new Date().valueOf() + index - 20000;
-          lsCorrect[index] = q;
-        }
-
-        for (let index = 0; index < lsWrong.length; index++) {
-          let q = lsWrong[index];
-          q.isCorrect = false;
-          q.points = 0;
-          q.id = new Date().valueOf() + index;
-          lsWrong[index] = q;
-        }
-
-        for (let index = 0; index < lsWrong.length; index++) {
-          lsCorrect.push(lsWrong[index]);
-        }
-
-        const newArray = linq
-          .from(lsCorrect)
-          .orderBy(function (x) {
-            return x.date;
-          })
-          .toArray();
-        reactLocalStorage.set("version", version);
-        reactLocalStorage.setObject("answers", newArray);
-        reactLocalStorage.remove("correct");
-        reactLocalStorage.remove("wrong");
-      } else if (localVersion === "0.1") {
-        const a = reactLocalStorage.getObject("answers", []);
-        let answers = linq
-          .from(a)
-          .where(function (x) {
-            return x.statsKey === undefined;
-          })
-          .toArray();
-
-        for (let index = 0; index < answers.length; index++) {
-          let q = answers[index];
-          q.statsKey = q.num2;
-          answers[index] = q;
-        }
-
-        reactLocalStorage.setObject("answers", answers);
-        reactLocalStorage.set("version", version);
-      } */
       if (
         localVersion === "0.3" ||
         localVersion === "0.2" ||
@@ -138,6 +92,8 @@ export default class Root extends React.Component {
       if (target.checked) {
         selected.basicMathNum = [value];
       }
+    } else if (name === "modulo" || name === "normal") {
+      selected.delMode = name;
     } else {
       if (name === "nas" || name === "del") {
         selected.skils["sci"] = false;
@@ -165,6 +121,7 @@ export default class Root extends React.Component {
       });
     }
     this.setState({ selected });
+    reactLocalStorage.setObject("selected", selected);
   }
 
   handleSubmit(event) {

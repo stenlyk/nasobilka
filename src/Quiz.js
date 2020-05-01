@@ -39,7 +39,21 @@ export default class Quiz extends React.Component {
 
   handleChange(event) {
     let answers = this.state.answers;
-    answers[this.state.position] = Number(event.target.value);
+    console.log(event.target);
+    const pos = this.state.position;
+    const questions = this.state.questions;
+    const keys = Object.keys(questions);
+    const q = questions[keys[pos]];
+    const name = event.target.name;
+
+    if (q.method === "del" && q.delMode === "modulo") {
+      if (!answers[pos]) {
+        answers[pos] = {};
+      }
+      answers[pos][name] = Number(event.target.value);
+    } else {
+      answers[pos] = Number(event.target.value);
+    }
     this.setState({ answers });
   }
 
@@ -49,7 +63,7 @@ export default class Quiz extends React.Component {
     let wrong = state.wrong;
     const answers = state.answers;
     const position = state.position;
-
+    console.log(Object.keys(questions).length, position);
     if (Object.keys(questions).length > position) {
       const key = Object.keys(questions)[position];
       const q = questions[key];
@@ -90,12 +104,24 @@ export default class Quiz extends React.Component {
 
         wrong[key] = q;
 
-        let corect = this.getCorrectAnswer(q);
-        this.setState({
-          correctAnswer: "Správná odpověď je " + corect,
-          correctAnswerState: "danger",
-          wrong,
-        });
+        let correct = this.getCorrectAnswer(q);
+        if (typeof correct === "object") {
+          this.setState({
+            correctAnswer:
+              "Správná odpověď je " +
+              correct.num +
+              " a zbytek " +
+              correct.modulo,
+            correctAnswerState: "danger",
+            wrong,
+          });
+        } else {
+          this.setState({
+            correctAnswer: "Správná odpověď je " + correct,
+            correctAnswerState: "danger",
+            wrong,
+          });
+        }
       }
 
       reactLocalStorage.setObject("answers", lsAnswers);
@@ -111,6 +137,7 @@ export default class Quiz extends React.Component {
     }
     if (Object.keys(questions).length === position + 1) {
       this.setState({ done: true });
+      console.log(Object.keys(questions).length, position);
     }
 
     event.preventDefault();
@@ -118,18 +145,28 @@ export default class Quiz extends React.Component {
 
   evaluate(question, answer) {
     const correct = this.getCorrectAnswer(question);
-    return correct === answer;
+    if (typeof correct === "object") {
+      return correct.num === answer.num && correct.modulo === answer.modulo;
+    } else {
+      return correct === answer;
+    }
   }
 
   getCorrectAnswer(question) {
-    if (question.side === "right") {
-      if (question.method === "nas") return question.num1 * question.num2;
-      if (question.method === "sci") return question.num1 + question.num2;
+    if (question.method === "del" && question.delMode === "modulo") {
+      const num = Math.floor(question.num1 / question.num2);
+      const modulo = question.num1 % question.num2;
+      return { num, modulo };
+    } else {
+      if (question.side === "right") {
+        if (question.method === "nas") return question.num1 * question.num2;
+        if (question.method === "sci") return question.num1 + question.num2;
+      }
+      if (question.first) {
+        return question.num2;
+      }
+      return question.num1;
     }
-    if (question.first) {
-      return question.num2;
-    }
-    return question.num1;
   }
 
   setDone(event, victory) {
@@ -168,6 +205,7 @@ export default class Quiz extends React.Component {
     const num = this.props.selected.num;
     const basicMathNum = this.props.selected.basicMathNum[0];
     const skils = this.props.selected.skils;
+    const delMode = this.props.selected.delMode;
 
     const sides = ["left", "right"];
     const methods = ["nas", "del"];
@@ -191,6 +229,15 @@ export default class Quiz extends React.Component {
 
         if (skils.nas === true && skils.del === true) {
           method = methods[Math.floor(Math.random() * methods.length)];
+        }
+
+        if (method === "del" && delMode === "modulo") {
+          num1 = this.randomIntFromInterval(num2, num2 * 10);
+          if (num1 % num2 === 0) {
+            num1 = this.randomIntFromInterval(num2, num2 * 10);
+          }
+          side = "right";
+          first = false;
         }
 
         if (num1 === 0) {
@@ -270,6 +317,7 @@ export default class Quiz extends React.Component {
         side,
         first,
         statsKey,
+        delMode,
       };
 
       this.setState((state) => ({
@@ -317,11 +365,12 @@ export default class Quiz extends React.Component {
     const side = q.side;
     const method = q.method;
     const first = q.first;
+    const delMode = q.delMode;
     return (
       <>
         <div className="row question justify-content-center align-items-center">
           <div className="col">
-            {this.renderMethod(method, num1, num2, side, first)}
+            {this.renderMethod(method, num1, num2, side, first, delMode)}
           </div>
         </div>
         {submited ? (
@@ -340,12 +389,12 @@ export default class Quiz extends React.Component {
     );
   }
 
-  renderMethod(method, num1, num2, side, first) {
+  renderMethod(method, num1, num2, side, first, delMode) {
     switch (method) {
       case "nas":
         return this.renderMultiplication(num1, num2, side, first);
       case "del":
-        return this.renderDivade(num1, num2, side, first);
+        return this.renderDivade(num1, num2, side, first, delMode);
       case "sci":
         return this.renderSummation(num1, num2, side, first);
       case "odc":
@@ -390,9 +439,10 @@ export default class Quiz extends React.Component {
     );
   }
 
-  renderDivade(num1, num2, side, first) {
+  renderDivade(num1, num2, side, first, delMode) {
     const key = "del|" + side + "|" + first + "|" + num1 + "|" + num2;
     const total = num1 * num2;
+    if (delMode === "modulo") return this.renderModulo(num1, num2, key);
     return side === "left" ? (
       <h2>
         {total} <span className="div">:</span>{" "}
@@ -424,6 +474,49 @@ export default class Quiz extends React.Component {
           onChange={(e) => this.handleChange(e)}
         />
       </h2>
+    );
+  }
+  renderModulo(num1, num2, key) {
+    return (
+      <>
+        <table>
+          <tr>
+            <td>
+              <h2>
+                {num1} <span className="div">:</span> {num2} <span>=</span>{" "}
+              </h2>
+            </td>
+            <td>
+              <input
+                key={key}
+                type="number"
+                name="num"
+                min="0"
+                step="1"
+                required
+                autoFocus
+                onChange={(e) => this.handleChange(e)}
+              />
+            </td>
+          </tr>
+          <tr className="small">
+            <td>
+              <h3>zbytek </h3>
+            </td>
+            <td>
+              <input
+                key={key + "modulo"}
+                type="number"
+                name="modulo"
+                min="0"
+                step="1"
+                required
+                onChange={(e) => this.handleChange(e)}
+              />
+            </td>
+          </tr>
+        </table>
+      </>
     );
   }
 
@@ -500,12 +593,12 @@ export default class Quiz extends React.Component {
     );
   }
 
-  renderViewMethod(method, num1, num2, side, first) {
+  renderViewMethod(method, num1, num2, side, first, delMode) {
     switch (method) {
       case "nas":
         return this.renderViewMultiplication(num1, num2, side, first);
       case "del":
-        return this.renderViewDivade(num1, num2, side, first);
+        return this.renderViewDivade(num1, num2, side, first, delMode);
       case "sci":
         return this.renderViewSummation(num1, num2, side, first);
       case "odc":
@@ -531,9 +624,10 @@ export default class Quiz extends React.Component {
     );
   }
 
-  renderViewDivade(num1, num2, side, first) {
+  renderViewDivade(num1, num2, side, first, delMode) {
     const key = "del|" + side + "|" + first + "|" + num1 + "|" + num2;
     const total = num1 * num2;
+    if (delMode === "modulo") return this.renderViewModulo(num1, num2, key);
     return side === "left" ? (
       <h3 key={key}>
         {total} : <strong className="bg-danger">{first ? num2 : num1}</strong> ={" "}
@@ -544,6 +638,20 @@ export default class Quiz extends React.Component {
         {total} : {first ? num1 : num2} ={" "}
         <strong className="bg-danger">{first ? num2 : num1}</strong>
       </h3>
+    );
+  }
+
+  renderViewModulo(num1, num2, key) {
+    const num = Math.floor(num1 / num2);
+    const modulo = num1 % num2;
+    return (
+      <>
+        <h3 key={key}>
+          {num1} <span className="div">:</span> {num2} <span>=</span>{" "}
+          <strong className="bg-danger">{num}</strong> z.{" "}
+          <strong className="bg-danger">{modulo}</strong>
+        </h3>
+      </>
     );
   }
 
@@ -590,7 +698,14 @@ export default class Quiz extends React.Component {
       const w = wrong[key];
       return (
         <div className="col-6" key={key}>
-          {this.renderViewMethod(w.method, w.num1, w.num2, w.side, w.first)}
+          {this.renderViewMethod(
+            w.method,
+            w.num1,
+            w.num2,
+            w.side,
+            w.first,
+            w.delMode
+          )}
         </div>
       );
     });
@@ -620,7 +735,7 @@ export default class Quiz extends React.Component {
     return (
       <>
         <h4 className="text-center quizHeader">{titles[countW]}</h4>
-        <h5 className="text-center quizHeader">Koukni jak ti to šlo.</h5>
+        <h5 className="text-center quizHeader">Koukni, jak ti to šlo.</h5>
         <div className="row quiz justify-content-around">
           <div className="col">
             <div className="badge success">
