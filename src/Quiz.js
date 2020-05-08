@@ -790,9 +790,9 @@ export default class Quiz extends React.Component<Props, State> {
     );
   }
 
-  renderWrong(wrong) {
+  renderWrong(wrong: { [string]: Question }) {
     const items = Object.keys(wrong);
-    return items.map((key) => {
+    return items.map<{ [string]: Question }>((key) => {
       const w = wrong[key];
       return (
         <div className="col-6" key={key}>
