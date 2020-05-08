@@ -1,5 +1,6 @@
+// @flow
 import React from "react";
-
+import { type Selected } from "./Root";
 export const nums = [
   1,
   2,
@@ -25,8 +26,35 @@ export const nums = [
 
 export const basicMathNums = ["0-10", "0-20", "0-100", "100-999", "1000-9999"];
 
-export default class Start extends React.Component {
-  constructor(props) {
+export const publicUrl = process.env.PUBLIC_URL || "";
+
+type Props = {
+  onChange: any,
+  onSubmit: any,
+  doublePoints: any,
+  selected: Selected,
+  total: number,
+  wrong: number,
+  fixed: number,
+};
+
+type State = {
+  num: Array<number>,
+  basicMathNums: Array<string>,
+  skils: {
+    sci: string,
+    odc: string,
+    nas: string,
+    del: string,
+  },
+  delMode: {
+    normal: string,
+    modulo: string,
+  },
+};
+
+export default class Start extends React.Component<Props, State> {
+  constructor(props: Props) {
     super(props);
     this.state = {
       num: nums,
@@ -44,7 +72,7 @@ export default class Start extends React.Component {
     };
   }
 
-  renderNumber(num) {
+  renderNumber(num: number) {
     const checked = this.props.selected.num.indexOf(num);
     return (
       <React.Fragment key={num}>
@@ -63,7 +91,7 @@ export default class Start extends React.Component {
     );
   }
 
-  renderNumberRange(num) {
+  renderNumberRange(num: string) {
     const checked = this.props.selected.basicMathNum.indexOf(num);
     const label = num.split("-");
     return (
@@ -77,13 +105,13 @@ export default class Start extends React.Component {
           onChange={this.props.onChange}
         />
         <label className="checkbox" htmlFor={"basicMathNum" + num}>
-          {label[1] < 100 ? "do " + label[1] : label[1]}
+          {parseFloat(label[1]) < 100 ? "do " + label[1] : label[1]}
         </label>
       </React.Fragment>
     );
   }
 
-  renderSkils(val, key) {
+  renderSkils(val: string, key: string) {
     // console.log(this.props.selected.skils[key] === true);
     return (
       <React.Fragment key={key}>
@@ -102,7 +130,7 @@ export default class Start extends React.Component {
     );
   }
 
-  renderDividingOptions(val, key) {
+  renderDividingOptions(val: string, key: string) {
     // console.log(this.props.selected.skils[key] === true);
     return (
       <React.Fragment key={key}>
@@ -180,11 +208,8 @@ export default class Start extends React.Component {
             </div>
             <div className="col text-right">
               <button type="submit" className="btn">
-                <img
-                  src={process.env.PUBLIC_URL + "/ic-next-white.svg"}
-                  alt="start"
-                />{" "}
-                Začít počítat
+                <img src={publicUrl + "/ic-next-white.svg"} alt="start" /> Začít
+                počítat
               </button>
             </div>
           </div>
@@ -203,11 +228,8 @@ export default class Start extends React.Component {
                     onClick={this.props.doublePoints}
                     className="btn btn-scondary"
                   >
-                    <img
-                      src={process.env.PUBLIC_URL + "/ic-next.svg"}
-                      alt="start"
-                    />{" "}
-                    Opravit si chyby
+                    <img src={publicUrl + "/ic-next.svg"} alt="start" /> Opravit
+                    si chyby
                   </button>
                 </div>
               </div>

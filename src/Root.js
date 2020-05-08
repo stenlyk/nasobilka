@@ -1,3 +1,4 @@
+// @flow
 import React from "react";
 import Start, { nums, basicMathNums } from "./Start.js";
 import Quiz from "./Quiz.js";
@@ -5,10 +6,43 @@ import { reactLocalStorage } from "reactjs-localstorage";
 import CircleGraph from "./CircleGraph.js";
 import linq from "linq";
 export const version = "0.5";
+export const publicUrl = process.env.PUBLIC_URL || "";
 
-export default class Root extends React.Component {
-  constructor(props) {
+type Props = {};
+type Skils = { nas: boolean, del: boolean, sci: boolean, odc: boolean };
+type Levels = { "20": "green", "50": "orange", "200": "silver", "500": "gold" };
+export type Methods = "nas" | "del" | "sci" | "odc";
+export type DelMode = "normal" | "modulo";
+type BasicMathNums = Array<string>;
+// type StatsCounter = { correct: number, wrong: number };
+type Stats = {
+  sci: any,
+  odc: any,
+  nas: any,
+  del: any,
+};
+export type Selected = {
+  num: Array<number>,
+  basicMathNum: BasicMathNums,
+  skils: Skils,
+  delMode: DelMode,
+};
+
+type State = {
+  selected: Selected,
+  submited: boolean,
+  error?: string,
+  num: Array<number>,
+  basicMathNums: Array<string>,
+  levels: Levels,
+  tab: Methods,
+  fixWrong: boolean,
+};
+
+export default class Root extends React.Component<Props, State> {
+  constructor(props: Props) {
     super(props);
+
     this.state = {
       selected: {
         //        num: [1, 2, 3, 4],
@@ -24,10 +58,10 @@ export default class Root extends React.Component {
       num: nums,
       basicMathNums,
       levels: {
-        20: "green",
-        50: "orange",
-        200: "silver",
-        500: "gold",
+        "20": "green",
+        "50": "orange",
+        "200": "silver",
+        "500": "gold",
       },
       tab: "nas",
       fixWrong: false,
@@ -66,65 +100,67 @@ export default class Root extends React.Component {
     reactLocalStorage.set("version", version);
   }
 
-  handleChange(event) {
+  handleChange(event: Event) {
     const target = event.target;
-    const value = target.value;
-    const name = target.name;
-    let selected = this.state.selected;
-    if (name === "num") {
-      if (target.checked) {
-        selected.num.push(Number(value));
-      } else {
-        var index = selected.num.indexOf(Number(target.value));
-        if (index !== -1) {
-          selected.num.splice(index, 1);
+    if (target instanceof HTMLInputElement) {
+      const value = target.value;
+      const name = target.name;
+      let selected = this.state.selected;
+      if (name === "num") {
+        if (target.checked) {
+          selected.num.push(Number(value));
+        } else {
+          var index = selected.num.indexOf(Number(target.value));
+          if (index !== -1) {
+            selected.num.splice(index, 1);
+          }
         }
-      }
-    } else if (name === "all") {
-      // console.log(target);
-      // console.log(selected.num.length, nums.length);
-      if (selected.num.length === nums.length) {
-        selected.num = [];
+      } else if (name === "all") {
+        // console.log(target);
+        // console.log(selected.num.length, nums.length);
+        if (selected.num.length === nums.length) {
+          selected.num = [];
+        } else {
+          selected.num = nums;
+        }
+      } else if (name === "basicMathNum") {
+        if (target.checked) {
+          selected.basicMathNum = [value];
+        }
+      } else if (name === "modulo" || name === "normal") {
+        selected.delMode = name;
       } else {
-        selected.num = nums;
+        if (name === "nas" || name === "del") {
+          selected.skils["sci"] = false;
+          selected.skils["odc"] = false;
+        }
+        if (name === "sci" || name === "odc") {
+          selected.skils["nas"] = false;
+          selected.skils["del"] = false;
+        }
+        selected.skils[name] = target.checked;
       }
-    } else if (name === "basicMathNum") {
-      if (target.checked) {
-        selected.basicMathNum = [value];
-      }
-    } else if (name === "modulo" || name === "normal") {
-      selected.delMode = name;
-    } else {
-      if (name === "nas" || name === "del") {
-        selected.skils["sci"] = false;
-        selected.skils["odc"] = false;
-      }
-      if (name === "sci" || name === "odc") {
-        selected.skils["nas"] = false;
-        selected.skils["del"] = false;
-      }
-      selected.skils[name] = target.checked;
-    }
 
-    if (
-      selected.skils["nas"] === false &&
-      selected.skils["del"] === false &&
-      selected.skils["sci"] === false &&
-      selected.skils["odc"] === false
-    ) {
-      this.setState({
-        error: "Zvol co chceš trénovat.",
-      });
-    } else {
-      this.setState({
-        error: "",
-      });
+      if (
+        selected.skils["nas"] === false &&
+        selected.skils["del"] === false &&
+        selected.skils["sci"] === false &&
+        selected.skils["odc"] === false
+      ) {
+        this.setState({
+          error: "Zvol co chceš trénovat.",
+        });
+      } else {
+        this.setState({
+          error: "",
+        });
+      }
+      this.setState({ selected });
+      reactLocalStorage.setObject("selected", selected);
     }
-    this.setState({ selected });
-    reactLocalStorage.setObject("selected", selected);
   }
 
-  handleSubmit(event) {
+  handleSubmit(event: Event) {
     const selected = this.state.selected;
 
     if (selected.skils.nas || selected.skils.del) {
@@ -158,21 +194,35 @@ export default class Root extends React.Component {
     event.preventDefault();
   }
 
-  doublePoints(event) {
+  doublePoints(event: Event) {
     this.setState({ submited: true, error: "", fixWrong: true });
     event.preventDefault();
   }
 
-  leave(event) {
+  leave(event: Event) {
     this.setState({ submited: false, fixWrong: false });
     event.preventDefault();
   }
 
-  switchTab(event) {
-    this.setState({ tab: event.target.value });
+  switchTab(event: Event) {
+    const target = event.target;
+    if (
+      target instanceof HTMLInputElement &&
+      (target.value === "nas" ||
+        target.value === "del" ||
+        target.value === "sci" ||
+        target.value === "odc")
+    ) {
+      this.setState({ tab: target.value });
+    } else {
+      throw new Error(
+        "Uknow tab name" +
+          (target instanceof HTMLInputElement ? target.value : "")
+      );
+    }
   }
 
-  streak(arr) {
+  /* streak(arr: Array<any>) {
     var i,
       temp,
       streak,
@@ -200,7 +250,7 @@ export default class Root extends React.Component {
 
     return highestStreak;
   }
-
+*/
   renderStart() {
     const answeres = reactLocalStorage.getObject("answers", []);
     const wrong = linq
@@ -240,13 +290,14 @@ export default class Root extends React.Component {
     );
   }
 
-  getLevel(points) {
+  getLevel(points: number) {
     const levels = this.state.levels;
     const keys = Object.keys(levels);
     let result = ["green", 20];
 
     keys.forEach((key, index, elm) => {
-      if (key < points) {
+      let numKey = parseFloat(key);
+      if (numKey < points) {
         result =
           index + 1 < keys.length
             ? [levels[elm[index + 1]], Number(elm[index + 1])]
@@ -256,7 +307,7 @@ export default class Root extends React.Component {
     return result;
   }
 
-  renderStat(stats) {
+  renderStat(stats: Stats) {
     // console.log(stats);
     const tab = this.state.tab;
     let data = stats.nas;
@@ -331,12 +382,7 @@ export default class Root extends React.Component {
                       >
                         <CircleGraph percent={percent} label={i} />
                         <img
-                          src={
-                            process.env.PUBLIC_URL +
-                            "/ic-" +
-                            level[0] +
-                            "-badge.svg"
-                          }
+                          src={publicUrl + "/ic-" + level[0] + "-badge.svg"}
                           alt={level[0]}
                         />
                       </div>
@@ -357,12 +403,7 @@ export default class Root extends React.Component {
                       >
                         <CircleGraph percent={percent} label={label[1]} />
                         <img
-                          src={
-                            process.env.PUBLIC_URL +
-                            "/ic-" +
-                            level[0] +
-                            "-badge.svg"
-                          }
+                          src={publicUrl + "/ic-" + level[0] + "-badge.svg"}
                           alt={level[0]}
                         />
                       </div>
@@ -428,29 +469,26 @@ export default class Root extends React.Component {
         <hr />
         <div className="row legned info align-items-center">
           <div className="col-md-6 col-sm-12">
-            <img
-              src={process.env.PUBLIC_URL + "/ic-green-badge.svg"}
-              alt="Zelenáč"
-            />{" "}
+            <img src={publicUrl + "/ic-green-badge.svg"} alt="Zelenáč" />{" "}
             <span>Zelenáč</span>
           </div>
           <div className="col-md-6 col-sm-12">
             <img
-              src={process.env.PUBLIC_URL + "/ic-orange-badge.svg"}
+              src={publicUrl + "/ic-orange-badge.svg"}
               alt="Chce to ještě trénink"
             />{" "}
             <span>Chce to ještě trénink</span>
           </div>
           <div className="col-md-6 col-sm-12">
             <img
-              src={process.env.PUBLIC_URL + "/ic-silver-badge.svg"}
+              src={publicUrl + "/ic-silver-badge.svg"}
               alt="Už jen kousek k cíli"
             />{" "}
             <span>Už jen kousek k cíli</span>
           </div>
           <div className="col-md-6 col-sm-12">
             <img
-              src={process.env.PUBLIC_URL + "/ic-gold-badge.svg"}
+              src={publicUrl + "/ic-gold-badge.svg"}
               alt="Počítáš na jedničku"
             />{" "}
             <span>Počítáš na jedničku</span>
@@ -503,10 +541,7 @@ export default class Root extends React.Component {
           <div className="row justify-content-center">
             <div className="col-md-5 col-sm-12">
               <a href="#leave" className="leave" onClick={(e) => this.leave(e)}>
-                <img
-                  src={process.env.PUBLIC_URL + "/ic-close.svg"}
-                  alt="Odejít"
-                />
+                <img src={publicUrl + "/ic-close.svg"} alt="Odejít" />
                 Odejít
               </a>
               <div className="box">{this.renderQuiz()}</div>

@@ -1,3 +1,4 @@
+// @flow
 import React from "react";
 import ReactDOM from "react-dom";
 import "./../node_modules/modern-normalize/modern-normalize.css";
