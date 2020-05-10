@@ -1,5 +1,5 @@
 // @flow
-import React from "react";
+import * as React from "react";
 import { reactLocalStorage } from "reactjs-localstorage";
 import linq from "linq";
 
@@ -666,7 +666,7 @@ export default class Quiz extends React.Component<Props, State> {
     side: "left" | "right",
     first: boolean,
     delMode: DelMode
-  ) {
+  ): React.Node {
     switch (method) {
       case "nas":
         return this.renderViewMultiplication(num1, num2, side, first);
@@ -677,7 +677,7 @@ export default class Quiz extends React.Component<Props, State> {
       case "odc":
         return this.renderViewSubtraction(num1, num2, side, first);
       default:
-        break;
+        return null;
     }
   }
 
@@ -790,9 +790,9 @@ export default class Quiz extends React.Component<Props, State> {
     );
   }
 
-  renderWrong(wrong: { [string]: Question }) {
+  renderWrong(wrong: { [string]: Question }): React.Node {
     const items = Object.keys(wrong);
-    return items.map<{ [string]: Question }>((key) => {
+    return items.map((key) => {
       const w = wrong[key];
       return (
         <div className="col-6" key={key}>
