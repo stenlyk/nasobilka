@@ -219,7 +219,7 @@ export default class Quiz extends React.Component<Props, State> {
         position: 10,
         wrong: Object.entries(questions)
           .slice(0, 4)
-          .map((entry) => entry[1]),
+          .reduce((a, [k, v]) => ({ ...a, [k]: v }), {}),
       });
     }
     event.preventDefault();
